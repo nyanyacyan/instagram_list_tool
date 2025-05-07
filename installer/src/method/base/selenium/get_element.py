@@ -662,3 +662,11 @@ class GetElement:
     def _enter_tab_chains(self):
         actions = ActionChains(self.chrome)
         actions.send_keys(Keys.TAB).pause(0.5).send_keys(Keys.ENTER).perform()
+
+    # ----------------------------------------------------------------------------------
+
+    def _push_enter_key(self, web_element: WebElement):
+        web_element.send_keys(Keys.ENTER)
+        self.logger.info(f'enter keyの入力しました。')
+
+    # ----------------------------------------------------------------------------------
