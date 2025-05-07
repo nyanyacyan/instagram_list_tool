@@ -391,6 +391,58 @@ class GetElement:
             self.chrome.execute_script("arguments[0].click();", element)
             self.logger.info(f"jsにてクリック実施: {element}")
 
+        self.clickWait.jsPageChecker(chrome=self.chrome)
+        return element
+
+    # ----------------------------------------------------------------------------------
+    # クリックのみ
+
+    def input_after_enter_key(self, value: str, inputText: str, by: str = "xpath"):
+        self.clickWait.jsPageChecker(chrome=self.chrome)
+        element = self.getElement(by=by, value=value)
+        try:
+            element.click()
+        except ElementClickInterceptedException:
+            self.logger.debug(f"popupなどでClickができません: {element}")
+            self.chrome.execute_script("arguments[0].click();", element)
+
+        element.clear()
+
+        try:
+            element.send_keys(inputText)
+            self.logger.debug(f"入力完了しました: {inputText}")
+            time.sleep(5)
+
+            actions = ActionChains(self.chrome)
+            actions.send_keys(inputText).send_keys(Keys.TAB).send_keys(Keys.TAB).send_keys(Keys.ENTER).perform()
+
+
+        # chromeDriverのバージョンが対応してない文字を検知した場合
+        except WebDriverException as e:
+            if "ChromeDriver only supports characters in the BMP" in str(e):
+                self.logger.warning(f'chromeDriverのバージョンが対応してない文字を検知: {inputText}')
+
+                bmp_text = ''.join(c for c in inputText if ord(c) < 0x10000)
+                self.logger.debug(f'bmp_text: {bmp_text}')
+                element.send_keys(bmp_text)
+
+                non_bmp_text = ''.join(c for c in inputText if ord(c) >= 0x10000)
+                self.logger.debug(f'non_bmp_text: {non_bmp_text}')
+                safe_non_bmp_text = json.dumps(non_bmp_text)
+                safe_non_bmp_text = safe_non_bmp_text.strip('"')
+                self.chrome.execute_script(f"arguments[0].value += '{safe_non_bmp_text}'", element)
+            else:
+                self.logger.error(f'未知のWebDriverExceptionが発生しました: {e}')
+                return None
+
+        except ElementClickInterceptedException:
+            self.logger.debug(f"popupなどでClickができません: {element}")
+            self.chrome.execute_script("arguments[0].click();", element)
+
+        except ElementNotInteractableException:
+            self.logger.debug(f"要素があるんだけどクリックができません: {element}")
+            self.chrome.execute_script("arguments[0].click();", element)
+            self.logger.info(f"jsにてクリック実施: {element}")
 
         self.clickWait.jsPageChecker(chrome=self.chrome)
         return element

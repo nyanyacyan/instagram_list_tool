@@ -195,12 +195,13 @@ class StoriesAnalysisElement(Enum):
 
 class Element(Enum):
     INSTA = {
-        "by_1": "xpath",
-        "value_1": '//span[contains(text(), "いいね！")]',
+
+        "by_1": 'xpath',
+        "value_1": '//a[.//span[text()="検索"]]',
+        "by_2": "xpath",
+        "value_2": '//input[@aria-label="検索語句"]',
         "TEST_USERNAME": "mon_guchi",
-        "": "",
-        "": "",
-        "": "",
+        "value_3": '//span[contains(text(), "いいね！")]',
         "": "",
         "": "",
         "": "",

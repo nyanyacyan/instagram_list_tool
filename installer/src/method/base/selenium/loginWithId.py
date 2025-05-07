@@ -82,11 +82,10 @@ class SingleSiteIDLogin:
 
                 # 検索ページなどが出てくる対策
                 # PCのスペックに合わせて設定
-                self.wait.jsPageChecker(chrome=self.chrome, timeout=10)
-                check_timeout()
+                return self.wait.jsPageChecker(chrome=self.chrome, timeout=10)
 
                 # reCAPTCHA対策を完了確認
-                return self.login_element_check( by=login_info["LOGIN_AFTER_ELEMENT_BY"], value=login_info["LOGIN_AFTER_ELEMENT_VALUE"], timeout=timeout, )
+                #  self.login_element_check( by=login_info["LOGIN_AFTER_ELEMENT_BY"], value=login_info["LOGIN_AFTER_ELEMENT_VALUE"], timeout=timeout, )
 
             except TimeoutError:
                 self.logger.critical(f'{self.__class__.__name__} エラー発生、リトライ実施: {retry_count + 1}/{max_count}')
