@@ -139,6 +139,21 @@ class GetElement:
             raise ValueError("定義しているもの以外のものを指定しています")
 
     # ----------------------------------------------------------------------------------
+    # 特定の要素のステータスを取得
+
+    def _get_attribute_to_element(self, by: str, value: str, attribute_value: str):
+        element = self.getElement(by=by, value=value)
+        self.logger.debug(f"element: {element}")
+
+        result_value = element.get_attribute(attribute_value)
+        if not result_value:
+            self.logger.error(f"指定の要素が見つかりませんでした: {value}")
+            return None
+
+        self.logger.debug(f"result_value: {result_value}")
+        return result_value
+
+    # ----------------------------------------------------------------------------------
     # 親要素から絞り込んで要素を取得
 
     def _get_sort_element(self, parent_by: str, parent_path: str, child_by: str, child_path: str):
@@ -393,6 +408,27 @@ class GetElement:
 
         self.clickWait.jsPageChecker(chrome=self.chrome)
         return element
+
+    # ----------------------------------------------------------------------------------
+    # 対象を選択してクリックのみ
+
+    def click_select_element(self, value: str, select_num: int, by: str = "xpath"):
+        self.clickWait.jsPageChecker(chrome=self.chrome)
+        elements = self.getElements(by=by, value=value)
+        try:
+            elements[select_num].click()
+            self.logger.debug(f"クリック完了しました: {value}")
+        except ElementClickInterceptedException:
+            self.logger.debug(f"popupなどでClickができません: {elements}")
+            self.chrome.execute_script("arguments[0].click();", elements)
+
+        except ElementNotInteractableException:
+            self.logger.debug(f"要素があるんだけどクリックができません: {elements}")
+            self.chrome.execute_script("arguments[0].click();", elements)
+            self.logger.info(f"jsにてクリック実施: {elements}")
+
+        self.clickWait.jsPageChecker(chrome=self.chrome)
+        return elements
 
     # ----------------------------------------------------------------------------------
     # クリックのみ

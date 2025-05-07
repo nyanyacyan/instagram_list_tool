@@ -10,6 +10,7 @@ import pandas as pd
 import concurrent.futures
 from typing import Dict
 from datetime import datetime, date, timedelta
+from selenium.webdriver.common.by import By
 
 # 自作モジュール
 from method.base.utils.logger import Logger
@@ -95,22 +96,6 @@ class TestSingleProcess:
             # URLのアクセス→ID入力→Passの入力→ログイン
             self.login.flowLoginID( login_info=self.const_login_info, )
 
-            # 検索ワードにユーザー名の入力
-
-
-            # 検索ボタンをクリック
-
-
-            # 一つ一つの投稿内容の日付の確認
-
-
-            # 投稿者のユーザー名を取得
-
-
-            # いいねのユーザー名を取得
-
-
-
 
             # 虫眼鏡をクリック
             self.get_element.clickElement(by=self.const_element['by_1'], value=self.const_element['value_1'])
@@ -118,10 +103,55 @@ class TestSingleProcess:
             # ユーザー名を入力した後にenter keyを入力
             self.get_element.input_after_enter_key(by=self.const_element['by_2'], value=self.const_element['value_2'], inputText=self.const_element['TEST_USERNAME'])
 
-            #TODO いいねをクリック
-            self.get_element.clickElement(by=self.const_element['by_1'], value=self.const_element['value_1'])
+            # 最初の投稿をクリック
+            self.get_element.clickElement(by=self.const_element['by_3'], value=self.const_element['value_3'])
+
+            # 日付データを取得
+            # self.get_element._get_attribute_to_element(by=self.const_element['by_4'], value=self.const_element['value_4'], attribute_value='datetime')
+
+            # いいねをクリック
+            self.get_element.clickElement(by=self.const_element['by_5'], value=self.const_element['value_5'])
 
             #TODO いいねのリストを取得
+
+            modal = self.chrome.find_element(By.XPATH, '//div[@role="dialog"]//div[contains(@style, "overflow")]')
+            seen_users = set()
+            all_usernames = []
+            scroll_step = 300
+            max_user_count = 10000  # ← ここを目的に応じて変更
+
+            # 初期位置
+            scroll_position = 0
+            # スクロール対象のモーダルエリア（適宜クラス指定などで調整）
+            while len(all_usernames) < max_user_count:
+                a_tags = modal.find_elements(By.XPATH, './/a[starts-with(@href, "/") and string-length(@href) > 1]')
+
+                for a in a_tags:
+                    href = a.get_attribute("href")
+                    if (
+                        href and
+                        href.startswith("https://www.instagram.com/") and
+                        href not in seen_users
+                    ):
+                        seen_users.add(href)
+                        username = href.replace("https://www.instagram.com/", "").strip("/")
+                        all_usernames.append(username)
+
+                        if len(all_usernames) >= max_user_count:
+                            break
+
+                # スクロールを小刻みに行う
+                scroll_position += scroll_step
+                self.logger.debug(f"スクロール位置: {scroll_position}")
+                self.logger.debug(f"取得したユーザー名: {all_usernames} 合計: {len(set(all_usernames))}件")
+                self.chrome.execute_script("arguments[0].scrollTop = arguments[1]", modal, scroll_position)
+                time.sleep(1)
+
+                # すでに全て読み込み終わっていた場合のブレーク条件
+                current_height = self.chrome.execute_script("return arguments[0].scrollHeight", modal)
+                if scroll_position >= current_height:
+                    break
+
 
             #TODO スライドする
 
