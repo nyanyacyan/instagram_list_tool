@@ -54,6 +54,7 @@ class LoginInfo(Enum):
     INSTA = {
         "LOGIN_URL": "https://www.instagram.com/",
         "HOME_URL": "",
+        "EXPLORE_URL": "https://www.instagram.com/mon_guchi/p/DHipkplzBpR/",
         "ID_BY": "name",
         "ID_VALUE": "username",
         "PASS_BY": "name",
@@ -97,8 +98,6 @@ class ErrCommentInfo(Enum):
 
 class PopUpComment(Enum):
     INSTA = {
-        "ALL_COMPLETE_TITLE": "完了通知",
-        "ALL_COMPLETE_COMMENT": "すべての処理が完了しました。エラー内容をご確認ください",
         "": "",
         "": "",
         "": "",
@@ -196,22 +195,9 @@ class StoriesAnalysisElement(Enum):
 
 class Element(Enum):
     INSTA = {
-        "MATCH_RULES_BY": "",
-        "MATCH_RULES_VOL": "//input[@id='has_condition2']",
-        "MATCH_CHOICE_BY": "xpath",
-        "MATCH_CHOICE_VOL": "//select[@name='condition[0][0][key]']",
-        "MATCH_CHOICE_SELECT_VOL": "base_date",
-        "DELIVERY_SETTING_SELECT_BY": "xpath",
-        "DELIVERY_SETTING_SELECT_VALUE": "//select[contains(@class, 'condition-condition')]",
-        "SETTING_SELECT_VALUE": "equal",
-        "DATE_INPUT_BY": "xpath",
-        "DATE_INPUT_VOL": "//div[contains(@class, 'condition-input')]//input[@type='date']",
-        "SORTING_BY": "xpath",
-        "SORTING_VOL": "//button[@type='submit' and contains(text(), '絞り込む')]",
-        "CSV_OUTPUT_VOL": "//a[contains(text(), 'CSV出力')]",
-        "CSV_FILE_NAME": "登録者_",
-        "CSV_EXTENSION": ".csv",
-        "": "",
+        "by_1": "xpath",
+        "value_1": '//span[contains(text(), "いいね！")]',
+        "TEST_USERNAME": "mon_guchi",
         "": "",
         "": "",
         "": "",

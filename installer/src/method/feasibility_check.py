@@ -63,6 +63,8 @@ class TestSingleProcess:
         self.const_err_cmt_dict = ErrCommentInfo.INSTA.value
         self.popup_cmt = PopUpComment.INSTA.value
 
+        # インスタンス
+
     # **********************************************************************************
     # ----------------------------------------------------------------------------------
     # IDとPassはenvから取得
@@ -93,6 +95,24 @@ class TestSingleProcess:
             # URLのアクセス→ID入力→Passの入力→ログイン
             self.login.flowLoginID( login_info=self.const_login_info, )
 
+            # 虫眼鏡をクリック
+            self.get_element.clickElement(by=self.const_element['by_1'], value=self.const_element['value_1'])
+
+            # ユーザー名を入力した後にenter keyを入力
+            self.get_element.clickClearInput(by=self.const_element['by_1'], value=self.const_element['value_1'], inputText=self.const_element['TEST_USERNAME'])
+
+            #TODO いいねをクリック
+            self.get_element.clickElement(by=self.const_element['by_1'], value=self.const_element['value_1'])
+
+            #TODO いいねのリストを取得
+
+            #TODO スライドする
+
+            #TODO いいねリストを取得
+
+            #TODO スライドする
+
+            #TODO ピン留めを取得
 
 
         except Exception as e:
