@@ -93,6 +93,23 @@ class TestSingleProcess:
             # URLのアクセス→ID入力→Passの入力→ログイン
             self.login.flowLoginID( login_info=self.const_login_info, )
 
+            # 検索ワードにユーザー名の入力
+
+
+            # 検索ボタンをクリック
+
+
+            # 一つ一つの投稿内容の日付の確認
+
+
+            # 投稿者のユーザー名を取得
+
+
+            # いいねのユーザー名を取得
+
+
+
+
 
 
         except Exception as e:
