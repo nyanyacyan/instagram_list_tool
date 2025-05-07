@@ -19,7 +19,7 @@ load_dotenv()
 
 class GssInfo(Enum):
 
-    CCX = {
+    INSTA = {
         "JSON_KEY_NAME": "sns-auto-430920-08274ad68b41.json",
         "SHEET_URL": "https://docs.google.com/spreadsheets/d/1dghp-9A1vd9WZbybka-2MmrV2-rpm-7wwsI-tRp9jYM/edit?gid=675546558#gid=675546558",
         "WORKSHEET_NAME": "アカウント",
@@ -51,19 +51,22 @@ class GssInfo(Enum):
 
 class LoginInfo(Enum):
 
-    CCX = {
-        "LOGIN_URL": "https://social.ccxcloud.io/login",
+    INSTA = {
+        "LOGIN_URL": "https://www.instagram.com/",
         "HOME_URL": "",
-        "ID_BY": "id",
+        "ID_BY": "name",
         "ID_VALUE": "username",
-        "PASS_BY": "id",
+        "PASS_BY": "name",
         "PASS_VALUE": "password",
         "BTN_BY": "xpath",
-        "BTN_VALUE": "//button[contains(text(), 'ログイン')]",
+        "BTN_VALUE": "//button[.//div[text()='ログイン']]",
         "LOGIN_AFTER_ELEMENT_BY": "xpath",
         "LOGIN_AFTER_ELEMENT_VALUE": "//li[contains(@class, 'sidebar-item') and .//a[contains(text(), 'フォロワー分析')]]",
-        "": "",
-        "": "",
+
+        # 入力
+        "ID_INPUT_TEXT": os.getenv("INSTA_ID"),
+        "PASS_INPUT_TEXT": os.getenv("INSTA_PASS"),
+
     }
 
 
@@ -72,7 +75,7 @@ class LoginInfo(Enum):
 
 class ErrCommentInfo(Enum):
 
-    CCX = {
+    INSTA = {
 
         # POPUP_TITLE
         "POPUP_TITLE_SHEET_INPUT_ERR": "スプレッドシートをご確認ください。",
@@ -93,7 +96,7 @@ class ErrCommentInfo(Enum):
 
 
 class PopUpComment(Enum):
-    CCX = {
+    INSTA = {
         "ALL_COMPLETE_TITLE": "完了通知",
         "ALL_COMPLETE_COMMENT": "すべての処理が完了しました。エラー内容をご確認ください",
         "": "",
@@ -106,7 +109,7 @@ class PopUpComment(Enum):
 
 
 class FollowerAnalysisElement(Enum):
-    CCX = {
+    INSTA = {
         "ZIP_FILE_HEAD_NAME": "Instagramマイアカウント フォロワー分析",
         "ZIP_EXTENSION": ".zip",
         "CSV_FILE_HEAD_NAME": "フォロワーチャート",
@@ -127,7 +130,7 @@ class FollowerAnalysisElement(Enum):
 
 
 class EngagementAnalysisElement(Enum):
-    CCX = {
+    INSTA = {
         "ZIP_FILE_HEAD_NAME": "Instagramマイアカウント エンゲージメント分析",
 
         "ZIP_EXTENSION": ".zip",
@@ -151,7 +154,7 @@ class EngagementAnalysisElement(Enum):
 
 
 class PostAnalysisElement(Enum):
-    CCX = {
+    INSTA = {
         "ZIP_FILE_HEAD_NAME": "Instagramマイアカウント 投稿一覧",
         "ZIP_EXTENSION": ".zip",
         "CSV_FILE_HEAD_NAME": "インサイト投稿一覧",
@@ -172,7 +175,7 @@ class PostAnalysisElement(Enum):
 
 
 class StoriesAnalysisElement(Enum):
-    CCX = {
+    INSTA = {
         "ZIP_FILE_HEAD_NAME": "Instagramマイアカウント ストーリーズ分析",
         "ZIP_EXTENSION": ".zip",
         "CSV_FILE_HEAD_NAME": "ストーリーズ投稿一覧",
@@ -192,7 +195,7 @@ class StoriesAnalysisElement(Enum):
 # ----------------------------------------------------------------------------------
 
 class Element(Enum):
-    CCX = {
+    INSTA = {
         "MATCH_RULES_BY": "",
         "MATCH_RULES_VOL": "//input[@id='has_condition2']",
         "MATCH_CHOICE_BY": "xpath",

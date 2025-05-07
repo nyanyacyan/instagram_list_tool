@@ -24,16 +24,16 @@ class GssCheckerErrWrite:
         self.getLogger = Logger()
         self.logger = self.getLogger.getLogger()
 
-        self.const_gss_info_dict = GssInfo.CCX.value
-        self.const_login_dict = LoginInfo.CCX.value
-        self.const_err_cmt_dict = ErrCommentInfo.CCX.value
+        self.const_gss_info_dict = GssInfo.INSTA.value
+        self.const_login_dict = LoginInfo.INSTA.value
+        self.const_err_cmt_dict = ErrCommentInfo.INSTA.value
         self.gss_write = GssWrite()
         self.popup = Popup()
 
         # const
-        self.const_gss_info = GssInfo.CCX.value
-        self.const_login_info = LoginInfo.CCX.value
-        self.const_err_cmt_dict = ErrCommentInfo.CCX.value
+        self.const_gss_info = GssInfo.INSTA.value
+        self.const_login_info = LoginInfo.INSTA.value
+        self.const_err_cmt_dict = ErrCommentInfo.INSTA.value
 
         # const 明確化
         self.const_col_name = self.const_gss_info["NAME"]
