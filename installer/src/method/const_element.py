@@ -207,7 +207,7 @@ class Element(Enum):
         "value_4": "//time",
         "by_5": "xpath",
         "value_5": '//span[contains(text(), "いいね！")]',
-        "": "",
+        "value_6": '//button//*[name()="svg"][@aria-label="次へ"]',
         "": "",
         "": "",
         "": "",

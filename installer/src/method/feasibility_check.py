@@ -106,15 +106,35 @@ class TestSingleProcess:
             # 最初の投稿をクリック
             self.get_element.clickElement(by=self.const_element['by_3'], value=self.const_element['value_3'])
 
+            # コメントユーザーを取得
+            elements = self.chrome.find_elements(By.XPATH, '//a[@role="link" and normalize-space(text()) != ""]')
+
+            usernames = []
+            seen = set()  # 重複排除
+
+            for el in elements:
+                href = el.get_attribute("href")
+                if href:
+                    # 例: https://www.instagram.com/mon_guchi/
+                    username = href.replace("https://www.instagram.com/", "").strip("/")
+                    if username and username not in seen:
+                        usernames.append(username)
+                        seen.add(username)
+
+            # 次へをクリック
+            # self.get_element.clickElement(value=self.const_element['value_6'])
+
             # 日付データを取得
             # self.get_element._get_attribute_to_element(by=self.const_element['by_4'], value=self.const_element['value_4'], attribute_value='datetime')
 
             # いいねをクリック
             self.get_element.clickElement(by=self.const_element['by_5'], value=self.const_element['value_5'])
 
-            #TODO いいねのリストを取得
+            # いいねのリストを取得
 
             modal = self.chrome.find_element(By.XPATH, '//div[@role="dialog"]//div[contains(@style, "overflow")]')
+
+            # set()は{}にどんどん入れ込む→同じものは入れない
             seen_users = set()
             all_usernames = []
             scroll_step = 300
