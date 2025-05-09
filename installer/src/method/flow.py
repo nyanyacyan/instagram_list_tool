@@ -29,14 +29,7 @@ from method.base.utils.popup import Popup
 from method.base.selenium.click_element import ClickElement
 from method.base.utils.file_move import FileMove
 from method.base.selenium.google_drive_upload import GoogleDriveUpload
-
-# Flow
-from method.download_flow import (
-    FollowerDownloadFlow,
-    EngagementDownloadFlow,
-    PostDownloadFlow,
-    StoriesDownloadFlow,
-)
+from method.get_gss_df_flow import GetGssDfFlow
 
 # const
 from method.const_element import (
@@ -50,107 +43,6 @@ from method.const_element import (
 deco = Decorators()
 
 # ----------------------------------------------------------------------------------
-# **********************************************************************************
-# 一連の流れ
-
-
-class FlowProcess:
-    def __init__(self):
-        # logger
-        self.getLogger = Logger()
-        self.logger = self.getLogger.getLogger()
-
-        # インスタンス
-        self.time_manager = TimeManager()
-        self.gss_read = GetDataGSSAPI()
-        self.gss_write = GssWrite()
-        self.drive_download = GoogleDriveDownload()
-        self.select_cell = GssSelectCell()
-        self.gss_check_err_write = GssCheckerErrWrite()
-        self.popup = Popup()
-
-        self.timestamp = datetime.now().strftime("%Y-%m-%d %H:%M")
-
-        # const
-        self.const_gss_info = GssInfo.INSTA.value
-        self.const_login_info = LoginInfo.INSTA.value
-        self.const_err_cmt_dict = ErrCommentInfo.INSTA.value
-        self.popup_cmt = PopUpComment.INSTA.value
-
-    ####################################################################################
-    # ----------------------------------------------------------------------------------
-    # 各メソッドをまとめる
-
-    def parallel_process(self, max_workers: int = 1):
-        try:
-            # スプシにアクセス（Worksheet指定）
-            df = self.gss_read._get_df_gss_url(gss_info=self.const_gss_info)
-            df_filtered = df[df["チェック"] == "TRUE"]
-            self.logger.debug(f"DataFrame: {df_filtered.head()}")
-
-            # 並列処理
-            with concurrent.futures.ThreadPoolExecutor(
-                max_workers=max_workers
-            ) as executor:
-                futures = []
-
-                for i, row in df_filtered.iterrows():
-                    row_num = i + 1
-                    get_gss_row_dict = row.to_dict()  # ここにgss情報
-
-                    # 完了通知column名
-                    complete_datetime_col_name = self.const_gss_info[
-                        "POST_COMPLETE_DATE"
-                    ]
-
-                    # エラーcolumn名
-                    err_datetime_col_name = self.const_gss_info["ERROR_DATETIME"]
-                    err_cmt_col_name = self.const_gss_info["ERROR_COMMENT"]
-
-                    complete_cell = self.select_cell.get_cell_address(
-                        gss_row_dict=get_gss_row_dict,
-                        col_name=complete_datetime_col_name,
-                        row_num=row_num,
-                    )
-
-                    err_datetime_cell = self.select_cell.get_cell_address(
-                        gss_row_dict=get_gss_row_dict,
-                        col_name=err_datetime_col_name,
-                        row_num=row_num,
-                    )
-                    err_cmt_cell = self.select_cell.get_cell_address(
-                        gss_row_dict=get_gss_row_dict,
-                        col_name=err_cmt_col_name,
-                        row_num=row_num,
-                    )
-
-                    # `SingleProcess` を **新しく作成**
-                    single_flow_instance = SingleProcess()
-
-                    future = executor.submit(
-                        single_flow_instance._single_process,
-                        gss_row_data=get_gss_row_dict,
-                        gss_info=self.const_gss_info,
-                        complete_cell=complete_cell,
-                        err_datetime_cell=err_datetime_cell,
-                        err_cmt_cell=err_cmt_cell,
-                        login_info=self.const_login_info,
-                    )
-
-                    futures.append(future)
-
-                concurrent.futures.wait(futures)
-
-            self.popup.popupCommentOnly(
-                popupTitle=self.popup_cmt["ALL_COMPLETE_TITLE"],
-                comment=self.popup_cmt["ALL_COMPLETE_COMMENT"],
-            )
-
-        except Exception as e:
-            self.logger.error(f"{self.__class__.__name__} 処理中にエラーが発生: {e}")
-
-    # ----------------------------------------------------------------------------------
-
 
 # **********************************************************************************
 # 一連の流れ
@@ -171,18 +63,13 @@ class SingleProcess:
         self.const_err_cmt_dict = ErrCommentInfo.INSTA.value
         self.popup_cmt = PopUpComment.INSTA.value
 
+        # Flow
+        self.get_gss_df_flow = GetGssDfFlow()
+
     # **********************************************************************************
     # ----------------------------------------------------------------------------------
 
-    def _single_process(
-        self,
-        gss_row_data: Dict,
-        gss_info: Dict,
-        complete_cell: str,
-        err_datetime_cell: str,
-        err_cmt_cell: str,
-        login_info: Dict,
-    ):
+    def _single_process( self, gss_row_data: Dict, gss_info: Dict, complete_cell: str, err_datetime_cell: str, err_cmt_cell: str, login_info: Dict, ):
         """各プロセスを実行する"""
 
         # ✅ Chrome の起動をここで行う
@@ -205,19 +92,70 @@ class SingleProcess:
             self.click_element = ClickElement(chrome=self.chrome)
             self.file_move = FileMove()
 
-            # URLのアクセス→ID入力→Passの入力→ログイン
-            self.login.flow_login_id_input_url(
-                login_info=login_info,
-                login_url=login_info["LOGIN_URL"],
-                id_text=gss_row_data[self.const_gss_info["ID"]],
-                pass_text=gss_row_data[self.const_gss_info["PASSWORD"]],
-                gss_info=gss_info,
-                err_datetime_cell=err_datetime_cell,
-                err_cmt_cell=err_cmt_cell,
-            )
-            # 対象のユーザーを検索
 
-            # いいねされている人のユーザー名を取得
+
+            #* 今回はログインあとのフロートする
+            #TODO GSSよりデータ取得→dfを作成
+            df = self.get_gss_df_flow.process()
+
+            #TODO ログイン
+            self.login.flowLoginID( login_info=self.const_login_info, )
+            self.random_sleep._random_sleep(5, 10)
+
+            #TODO 対象のページが開いているかどうかを確認
+
+            #TODO ターゲットユーザーのURLリストを下に下記のフローを回す
+            for index, row in df.iterrows():
+                row_dict = row.to_dict()
+                self.logger.debug(f"row_dict: {row_dict}")
+
+                target_user_url = row_dict[self.const_gss_info["TARGET_USER_URL"]]
+                start_daytime = row_dict[self.const_gss_info["START_DAYTIME"]]
+                end_daytime = row_dict[self.const_gss_info["END_DAYTIME"]]
+                running_date = row_dict[self.const_gss_info["RUNNING_DATE"]]
+                write_error = row_dict[self.const_gss_info["WRITE_ERROR"]]
+
+                self.logger.debug(f"\ntarget_user_url: {target_user_url}\nstart_daytime: {start_daytime}\nend_daytime: {end_daytime}\nrunning_date: {running_date}\nwrite_error: {write_error}")
+
+                #TODO 新しいタブを開いてURLにアクセス
+                self.chrome.execute_script("window.open('');")
+                self.chrome.switch_to.window(self.chrome.window_handles[-1])
+                self.chrome.get(target_user_url)
+                self.random_sleep._random_sleep(5, 10)
+                self.logger.debug(f"URLにアクセス: {target_user_url}")
+                self.logger.debug(f"タブの数: {len(self.chrome.window_handles)}")
+
+                #TODO ピン留めされた投稿数を取得
+                pin_count = self.get_element.getElements(by=self.const_element['by_3'], value=self.const_element['value_3'])
+                self.logger.debug(f"【{index}つ目】ピン留めされた投稿数: {pin_count}")
+
+                #TODO 最初の投稿をクリック
+                self.get_element.clickElement(by=self.const_element['by_3'], value=self.const_element['value_3'])
+                self.random_sleep._random_sleep(5, 10)
+
+                #TODO 日付を取得する
+                post_date = self.get_element._get_attribute_to_element(by=self.const_element['by_4'], value=self.const_element['value_4'], attribute_value='datetime')
+                self.logger.debug(f"投稿日時: {post_date}")
+                self.logger.debug(f"投稿日時の型: {type(post_date)}")
+
+                #TODO post_date投稿日時をdatetime型に変換
+                post_date = datetime.strptime(post_date, "%Y-%m-%dT%H:%M:%S.%fZ")
+                self.logger.debug(f"投稿日時の型: {type(post_date)}")
+
+                #TODO start_daytimeとend_daytimeの差分（取得したい日付リスト生成）
+                start_daytime = datetime.strptime(start_daytime, "%Y-%m-%d %H:%M")
+                end_daytime = datetime.strptime(end_daytime, "%Y-%m-%d %H:%M")
+                self.logger.debug(f"start_daytime: {start_daytime}")
+                self.logger.debug(f"end_daytime: {end_daytime}")
+
+                #TODO 日付突合
+                
+
+                #TODO 日付チェックOKフローの実行→取得したデータをGSSに書き込む
+
+                #TODO 日付チェックNGフローの実行
+
+                #TODO 対象のタブを閉じる（close）
 
             # コメントされている人のユーザー名を取得
 
@@ -225,30 +163,20 @@ class SingleProcess:
             timeout_comment = "タイムエラー：ログインに失敗している可能性があります。"
             self.logger.error(f"{self.__class__.__name__} {timeout_comment}")
             # エラータイムスタンプ
-            self.gss_write.write_data_by_url(
-                gss_info=gss_info, cell=err_datetime_cell, input_data=self.timestamp
-            )
+            self.gss_write.write_data_by_url( gss_info=gss_info, cell=err_datetime_cell, input_data=self.timestamp )
 
             # エラーコメント
-            self.gss_write.write_data_by_url(
-                gss_info=gss_info, cell=err_cmt_cell, input_data=timeout_comment
-            )
+            self.gss_write.write_data_by_url( gss_info=gss_info, cell=err_cmt_cell, input_data=timeout_comment )
 
         except Exception as e:
-            process_error_comment = (
-                f"{self.__class__.__name__} 処理中にエラーが発生 {e}"
-            )
+            process_error_comment = ( f"{self.__class__.__name__} 処理中にエラーが発生 {e}" )
             self.logger.error(process_error_comment)
             # エラータイムスタンプ
             self.logger.debug(f"self.timestamp: {self.timestamp}")
-            self.gss_write.write_data_by_url(
-                gss_info=gss_info, cell=err_datetime_cell, input_data=self.timestamp_two
-            )
+            self.gss_write.write_data_by_url( gss_info=gss_info, cell=err_datetime_cell, input_data=self.timestamp_two )
 
             # エラーコメント
-            self.gss_write.write_data_by_url(
-                gss_info=gss_info, cell=err_cmt_cell, input_data=process_error_comment
-            )
+            self.gss_write.write_data_by_url( gss_info=gss_info, cell=err_cmt_cell, input_data=process_error_comment )
 
         finally:
             delete_count = 0

@@ -30,6 +30,11 @@ class GssInfo(Enum):
         "NAME": "ユーザー名",
         "ID": "ID",
         "PASSWORD": "Password",
+        "TARGET_USER_URL": "アカウントURL",
+        "START_DAYTIME": "取得開始日時",
+        "END_DAYTIME": "取得終了日時",
+        "RUNNING_DATE": "実施日時",
+        "WRITE_ERROR": "エラー",
 
         "POST_COMPLETE_DATE": "最新実施日時",
         "ERROR_DATETIME": "エラー日時",
@@ -81,8 +86,7 @@ class ErrCommentInfo(Enum):
         # POPUP_TITLE
         "POPUP_TITLE_SHEET_INPUT_ERR": "スプレッドシートをご確認ください。",
         "POPUP_TITLE_FACEBOOK_LOGIN_ERR": "ログインが必要です",
-        "": "",
-        "": "",
+        "POPUP_TITLE_SHEET_CHECK": "スプレッドシートのチェックされている項目がありません",
         "": "",
         "": "",
         "": "",
