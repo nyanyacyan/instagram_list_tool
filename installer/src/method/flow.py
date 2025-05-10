@@ -149,7 +149,20 @@ class SingleProcess:
                 self.logger.debug(f"end_daytime: {end_daytime}")
 
                 #TODO 日付突合
-                
+                if start_daytime <= post_date <= end_daytime:
+                    self.logger.debug(f"日付チェックOK: {post_date}")
+
+                    
+
+                    #TODO 日付チェックOKフローの実行→取得したデータをGSSに書き込む
+                    self.gss_write.write_data_by_url( gss_info=gss_info, cell=complete_cell, input_data=self.timestamp_two )
+
+                    #TODO 書き込みエラーのフラグを立てる
+                    self.gss_write.write_data_by_url( gss_info=gss_info, cell=write_error, input_data="NG" )
+
+                else:
+                    self.logger.debug(f"日付チェックNG: {post_date}")
+
 
                 #TODO 日付チェックOKフローの実行→取得したデータをGSSに書き込む
 
@@ -171,6 +184,7 @@ class SingleProcess:
         except Exception as e:
             process_error_comment = ( f"{self.__class__.__name__} 処理中にエラーが発生 {e}" )
             self.logger.error(process_error_comment)
+
             # エラータイムスタンプ
             self.logger.debug(f"self.timestamp: {self.timestamp}")
             self.gss_write.write_data_by_url( gss_info=gss_info, cell=err_datetime_cell, input_data=self.timestamp_two )
@@ -196,9 +210,7 @@ class SingleProcess:
             self.logger.info(f"指定のファイルの削除を実施: {file_path}")
 
         else:
-            self.logger.error(
-                f"{self.__class__.__name__} ファイルが存在しません: {file_path}"
-            )
+            self.logger.error( f"{self.__class__.__name__} ファイルが存在しません: {file_path}" )
 
 
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
