@@ -98,10 +98,10 @@ class GetUserToInsta:
             # いいねのリストを取得
             modal_element = self.get_element.getElement(value=self.const_element['value_6'])
 
-
+            # user_urlとnameを取得
             all_usernames, all_user_url = self._get_usernames_from_modal(modal_element=modal_element)
 
-            return df_filtered
+            return all_usernames, all_user_url
 
         except Exception as e:
             process_error_comment = ( f"{self.__class__.__name__} 処理中にエラーが発生 {e}" )
@@ -157,3 +157,5 @@ class GetUserToInsta:
         self.logger.debug(f"最終的に取得したユーザー名: {all_usernames} 合計: {len(set(all_usernames))}件")
         self.logger.debug(f"すべてのユーザーURL: {all_user_url} 合計: {len(all_user_url)}")
         return all_usernames, all_user_url
+
+    # ----------------------------------------------------------------------------------

@@ -10,6 +10,7 @@ import pandas as pd
 import concurrent.futures
 from typing import Dict
 from datetime import datetime, date, timedelta
+from selenium.webdriver.common.by import By
 
 # 自作モジュール
 from method.base.utils.logger import Logger
@@ -32,13 +33,10 @@ from method.base.selenium.google_drive_upload import GoogleDriveUpload
 from method.get_gss_df_flow import GetGssDfFlow
 
 # const
-from method.const_element import (
-    GssInfo,
-    LoginInfo,
-    ErrCommentInfo,
-    PopUpComment,
-    Element,
-)
+from method.const_element import ( GssInfo, LoginInfo, ErrCommentInfo, PopUpComment, Element, )
+
+# flow
+from method.get_user_to_insta import GetUserToInsta
 
 deco = Decorators()
 
@@ -65,6 +63,7 @@ class SingleProcess:
 
         # Flow
         self.get_gss_df_flow = GetGssDfFlow()
+        self.get_user_data = GetUserToInsta()
 
     # **********************************************************************************
     # ----------------------------------------------------------------------------------
@@ -152,7 +151,13 @@ class SingleProcess:
                 if start_daytime <= post_date <= end_daytime:
                     self.logger.debug(f"日付チェックOK: {post_date}")
 
-                    
+                    # コメントユーザー情報の取得
+                    # comment_elements = self.chrome.find_elements(By.XPATH, '//a[@role="link" and normalize-space(text()) != ""]')
+                    comment_elements = self.get_element.getElements(value='//a[@role="link" and normalize-space(text()) != ""]')
+                    self.logger.debug(f"コメント要素: {comment_elements}")
+
+                    # いいねの取得
+                    self.get_user_data.process()
 
                     #TODO 日付チェックOKフローの実行→取得したデータをGSSに書き込む
                     self.gss_write.write_data_by_url( gss_info=gss_info, cell=complete_cell, input_data=self.timestamp_two )
