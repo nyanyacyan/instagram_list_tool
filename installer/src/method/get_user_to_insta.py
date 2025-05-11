@@ -9,6 +9,7 @@ import time
 from datetime import datetime
 from selenium.webdriver.remote.webelement import WebElement
 from selenium.webdriver.common.by import By
+from selenium.webdriver.chrome.webdriver import WebDriver
 
 # 自作モジュール
 from method.base.utils.logger import Logger
@@ -49,7 +50,7 @@ deco = Decorators()
 
 
 class GetUserToInsta:
-    def __init__(self):
+    def __init__(self, chrome: WebDriver):
         # logger
         self.getLogger = Logger()
         self.logger = self.getLogger.getLogger()
@@ -67,15 +68,15 @@ class GetUserToInsta:
         self.timestamp = datetime.now().strftime("%Y-%m-%d %H:%M")
 
         # const
-        self.const_gss_info = GssInfo.UTAGE.value
-        self.const_login_info = LoginInfo.UTAGE.value
-        self.const_err_cmt_dict = ErrCommentInfo.UTAGE.value
-        self.popup_cmt = PopUpComment.UTAGE.value
+        self.const_gss_info = GssInfo.INSTA.value
+        self.const_login_info = LoginInfo.INSTA.value
+        self.const_err_cmt_dict = ErrCommentInfo.INSTA.value
+        self.popup_cmt = PopUpComment.INSTA.value
 
-        self.login = SingleSiteIDLogin(chrome=self.chrome)
-        self.random_sleep = SeleniumBasicOperations(chrome=self.chrome)
-        self.get_element = GetElement(chrome=self.chrome)
-        self.selenium = SeleniumBasicOperations(chrome=self.chrome)
+        self.login = SingleSiteIDLogin(chrome=chrome)
+        self.random_sleep = SeleniumBasicOperations(chrome=chrome)
+        self.get_element = GetElement(chrome=chrome)
+        self.selenium = SeleniumBasicOperations(chrome=chrome)
         self.gss_read = GetDataGSSAPI()
         self.gss_write = GssWrite()
         self.drive_download = GoogleDriveDownload()
@@ -83,7 +84,7 @@ class GetUserToInsta:
         self.select_cell = GssSelectCell()
         self.gss_check_err_write = GssCheckerErrWrite()
         self.popup = Popup()
-        self.click_element = ClickElement(chrome=self.chrome)
+        self.click_element = ClickElement(chrome=chrome)
         self.file_move = FileMove()
 
     ####################################################################################

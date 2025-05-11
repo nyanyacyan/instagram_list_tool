@@ -232,13 +232,13 @@ class GetDataGSSAPI:
     # GUIからWorksheetを指定してdfを返す
 
     @decoInstance.retryAction(maxRetry=3, delay=30)
-    def _get_df_gss_url(self, gss_info: Dict):
-        client = self.client(jsonKeyName=gss_info["JSON_KEY_NAME"])
+    def _get_df_gss_url(self, json_key_name: str, sheet_url: str, worksheet_name: str):
+        client = self.client(json_key_name=json_key_name)
 
-        self.logger.debug( f"利用可能なワークシート: {client.open_by_url(gss_info['SHEET_URL']).worksheets(gss_info['WORKSHEET_NAME'])}" )
+        self.logger.debug( f"利用可能なワークシート: {client.open_by_url(sheet_url).worksheets(worksheet_name)}" )
 
         # 対象のスプシを開く
-        worksheet = client.open_by_url(gss_info['SHEET_URL']).worksheet(gss_info['WORKSHEET_NAME'])
+        worksheet = client.open_by_url(sheet_url).worksheet(worksheet_name)
 
         # デバッグ用
         all_values = worksheet.get_all_values()

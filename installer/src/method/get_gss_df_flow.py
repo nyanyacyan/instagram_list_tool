@@ -47,20 +47,20 @@ class GetGssDfFlow:
         self.timestamp = datetime.now().strftime("%Y-%m-%d %H:%M")
 
         # const
-        self.const_gss_info = GssInfo.UTAGE.value
-        self.const_login_info = LoginInfo.UTAGE.value
-        self.const_err_cmt_dict = ErrCommentInfo.UTAGE.value
-        self.popup_cmt = PopUpComment.UTAGE.value
+        self.const_gss_info = GssInfo.INSTA.value
+        self.const_login_info = LoginInfo.INSTA.value
+        self.const_err_cmt_dict = ErrCommentInfo.INSTA.value
+        self.popup_cmt = PopUpComment.INSTA.value
 
 
     ####################################################################################
     # ----------------------------------------------------------------------------------
-    # 各メソッドをまとめる
+    # 各メソッドをまとめる チェックのある項目だけを抽出
 
-    def process(self):
+    def process(self, worksheet_name: str):
         try:
             # スプシにアクセス（Worksheet指定）
-            df = self.gss_read._get_df_gss_url(gss_info=self.const_gss_info)
+            df = self.gss_read._get_df_gss_url(worksheet_name, json_key_name=self.const_gss_info['JSON_KEY_NAME'], sheet_url=self.const_gss_info['SHEET_URL'])
             df_filtered = df[df["チェック"] == "TRUE"]
 
             df_filtered.empty
@@ -84,3 +84,35 @@ class GetGssDfFlow:
 
 
     # ----------------------------------------------------------------------------------
+
+
+    def get_account_process(self, worksheet_name: str):
+        try:
+            # スプシにアクセス（Worksheet指定）
+            df = self.gss_read._get_df_gss_url(worksheet_name, json_key_name=self.const_gss_info['JSON_KEY_NAME'], sheet_url=self.const_gss_info['SHEET_URL'])
+            df_filtered = df[df["チェック"] == "TRUE"]
+
+            df_filtered.empty
+            if df_filtered.empty:
+                self.logger.error("チェック項目がある項目がありません")
+                raise
+
+            self.logger.debug(f'DataFrame: {df_filtered.head()}')
+
+            # 上記URLからWorksheetを取得
+            existing_titles = self.gss_read._get_all_worksheet(gss_info=self.const_gss_info)
+            self.logger.debug(f'既存Worksheet一覧: {existing_titles}')
+
+            gss_id_text = df_filtered[self.const_gss_info['ACCOUNT_ID']].iloc[0]
+            gss_pass_text = df_filtered[self.const_gss_info['ACCOUNT_PASS']].iloc[0]
+
+            account_info = {'GSS_ID_TEXT': gss_id_text, 'GSS_PASS_TEXT': gss_pass_text}
+            self.logger.info(f"account_info: {account_info}")
+            return account_info
+
+        except Exception as e:
+            process_error_comment = ( f"{self.__class__.__name__} 処理中にエラーが発生 {e}" )
+            self.logger.error(process_error_comment)
+            self.chrome.quit()
+            self.popup.popupCommentOnly( popupTitle=self.const_err_cmt_dict["POPUP_TITLE_SHEET_INPUT_ERR"], comment=self.const_err_cmt_dict["POPUP_TITLE_SHEET_CHECK"], )
+

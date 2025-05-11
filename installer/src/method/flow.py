@@ -54,6 +54,10 @@ class SingleProcess:
         self.timestamp_two = self.timestamp.strftime("%Y-%m-%d %H:%M")
         self.date_only_stamp = self.timestamp.date().strftime("%m月%d日")
 
+        # ✅ Chrome の起動をここで行う
+        self.chromeManager = ChromeManager()
+        self.chrome = self.chromeManager.flowSetupChrome()
+
         # const
         self.const_gss_info = GssInfo.INSTA.value
         self.const_login_info = LoginInfo.INSTA.value
@@ -63,48 +67,43 @@ class SingleProcess:
 
         # Flow
         self.get_gss_df_flow = GetGssDfFlow()
-        self.get_user_data = GetUserToInsta()
+        self.get_user_data = GetUserToInsta(chrome=self.chrome)
+
+        # インスタンス
+        self.login = SingleSiteIDLogin(chrome=self.chrome)
+        self.random_sleep = SeleniumBasicOperations(chrome=self.chrome)
+        self.get_element = GetElement(chrome=self.chrome)
+        self.selenium = SeleniumBasicOperations(chrome=self.chrome)
+        self.gss_read = GetDataGSSAPI()
+        self.gss_write = GssWrite()
+        self.drive_download = GoogleDriveDownload()
+        self.drive_upload = GoogleDriveUpload()
+        self.select_cell = GssSelectCell()
+        self.gss_check_err_write = GssCheckerErrWrite()
+        self.popup = Popup()
+        self.click_element = ClickElement(chrome=self.chrome)
+        self.file_move = FileMove()
+
 
     # **********************************************************************************
     # ----------------------------------------------------------------------------------
 
-    def _single_process( self, gss_row_data: Dict, gss_info: Dict, complete_cell: str, err_datetime_cell: str, err_cmt_cell: str, login_info: Dict, ):
+    def _single_process(self):
         """各プロセスを実行する"""
-
-        # ✅ Chrome の起動をここで行う
-        self.chromeManager = ChromeManager()
-        self.chrome = self.chromeManager.flowSetupChrome()
-
         try:
-            # インスタンスの作成 (chrome を引数に渡す)
-            self.login = SingleSiteIDLogin(chrome=self.chrome)
-            self.random_sleep = SeleniumBasicOperations(chrome=self.chrome)
-            self.get_element = GetElement(chrome=self.chrome)
-            self.selenium = SeleniumBasicOperations(chrome=self.chrome)
-            self.gss_read = GetDataGSSAPI()
-            self.gss_write = GssWrite()
-            self.drive_download = GoogleDriveDownload()
-            self.drive_upload = GoogleDriveUpload()
-            self.select_cell = GssSelectCell()
-            self.gss_check_err_write = GssCheckerErrWrite()
-            self.popup = Popup()
-            self.click_element = ClickElement(chrome=self.chrome)
-            self.file_move = FileMove()
-
-
-
             #* 今回はログインあとのフロートする
             #TODO GSSよりデータ取得→dfを作成
-            df = self.get_gss_df_flow.process()
+            target_df = self.get_gss_df_flow.process(worksheet_name=self.const_gss_info['TARGET_WORKSHEET_NAME'])
+            account_info = self.get_gss_df_flow.get_account_process(worksheet_name=self.const_gss_info['ACCOUNT_WORKSHEET_NAME'])
 
             #TODO ログイン
-            self.login.flowLoginID( login_info=self.const_login_info, )
-            self.random_sleep._random_sleep(5, 10)
+            self.login.flowLoginID(id_text=account_info['GSS_ID_TEXT'], pass_text=account_info['GSS_PASS_TEXT'], login_info=self.const_login_info)
+            self.random_sleep._random_sleep(10, 15)
 
             #TODO 対象のページが開いているかどうかを確認
 
             #TODO ターゲットユーザーのURLリストを下に下記のフローを回す
-            for index, row in df.iterrows():
+            for index, row in target_df.iterrows():
                 row_dict = row.to_dict()
                 self.logger.debug(f"row_dict: {row_dict}")
 
@@ -148,7 +147,7 @@ class SingleProcess:
                 self.logger.debug(f"end_daytime: {end_daytime}")
 
                 #TODO 日付突合
-                if start_daytime <= post_date <= end_daytime:
+                if start_daytime <= post_date:
                     self.logger.debug(f"日付チェックOK: {post_date}")
 
                     # コメントユーザー情報の取得
@@ -157,7 +156,7 @@ class SingleProcess:
                     self.logger.debug(f"コメント要素: {comment_elements}")
 
                     # いいねの取得
-                    self.get_user_data.process()
+                    all_usernames, all_user_url = self.get_user_data.process()
 
                     #TODO 日付チェックOKフローの実行→取得したデータをGSSに書き込む
                     self.gss_write.write_data_by_url( gss_info=gss_info, cell=complete_cell, input_data=self.timestamp_two )
@@ -166,7 +165,7 @@ class SingleProcess:
                     self.gss_write.write_data_by_url( gss_info=gss_info, cell=write_error, input_data="NG" )
 
                 else:
-                    self.logger.debug(f"日付チェックNG: {post_date}")
+                    self.logger.debug(f"日付チェック対象外の日付: {post_date}")
 
 
                 #TODO 日付チェックOKフローの実行→取得したデータをGSSに書き込む
@@ -198,12 +197,6 @@ class SingleProcess:
             self.gss_write.write_data_by_url( gss_info=gss_info, cell=err_cmt_cell, input_data=process_error_comment )
 
         finally:
-            delete_count = 0
-            for upload_path in upload_path_list:
-                self._delete_file(upload_path)  # CSVファイルを消去
-                delete_count += 1
-                self.logger.info(f"{delete_count} つ目のCSVファイルの削除を実施")
-
             # ✅ Chrome を終了
             self.chrome.quit()
 

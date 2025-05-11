@@ -53,7 +53,7 @@ class SingleSiteIDLogin:
     # IDログイン
     # reCAPTCHA OK
 
-    def flowLoginID(self, login_info: dict, timeout: int = 100, max_count: int=3):
+    def flowLoginID(self, id_text: str, pass_text: str, login_info: dict, timeout: int = 100, max_count: int=3):
         retry_count = 0
         while retry_count < max_count:
             try:
@@ -70,10 +70,10 @@ class SingleSiteIDLogin:
                 self.openSite(login_url=login_info["LOGIN_URL"])
                 check_timeout()
 
-                self.inputId( by=login_info["ID_BY"], value=login_info["ID_VALUE"], inputText=login_info["ID_INPUT_TEXT"], )
+                self.inputId( by=login_info["ID_BY"], value=login_info["ID_VALUE"], inputText=id_text, )
                 check_timeout()
 
-                self.inputPass( by=login_info["PASS_BY"], value=login_info["PASS_VALUE"], inputText=login_info["PASS_INPUT_TEXT"], )
+                self.inputPass( by=login_info["PASS_BY"], value=login_info["PASS_VALUE"], inputText=pass_text, )
                 check_timeout()
 
                 # ログインボタンをクリック
