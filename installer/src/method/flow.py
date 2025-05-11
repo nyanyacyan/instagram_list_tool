@@ -92,17 +92,17 @@ class SingleProcess:
         """各プロセスを実行する"""
         try:
             #* 今回はログインあとのフロートする
-            #TODO GSSよりデータ取得→dfを作成
+            # GSSよりデータ取得→dfを作成
             target_df = self.get_gss_df_flow.process(worksheet_name=self.const_gss_info['TARGET_WORKSHEET_NAME'])
             account_info = self.get_gss_df_flow.get_account_process(worksheet_name=self.const_gss_info['ACCOUNT_WORKSHEET_NAME'])
 
-            #TODO ログイン
+            # ログイン
             self.login.flowLoginID(id_text=account_info['GSS_ID_TEXT'], pass_text=account_info['GSS_PASS_TEXT'], login_info=self.const_login_info)
             self.random_sleep._random_sleep(10, 15)
 
             #TODO 対象のページが開いているかどうかを確認
 
-            #TODO ターゲットユーザーのURLリストを下に下記のフローを回す
+            # ターゲットユーザーのURLリストを下に下記のフローを回す
             for index, row in target_df.iterrows():
                 row_dict = row.to_dict()
                 self.logger.debug(f"row_dict: {row_dict}")
@@ -118,7 +118,7 @@ class SingleProcess:
 
                 self.logger.debug(f"\ntarget_user_url: {target_user_url}\nstart_daytime: {start_daytime}\nrunning_date: {running_date}\nwrite_error: {write_error}")
 
-                #TODO 新しいタブを開いてURLにアクセス
+                # 新しいタブを開いてURLにアクセス
                 self.chrome.execute_script("window.open('');")
                 self.chrome.switch_to.window(self.chrome.window_handles[-1])
                 self.chrome.get(target_user_url)
@@ -127,23 +127,23 @@ class SingleProcess:
                 self.logger.debug(f"タブの数: {len(self.chrome.window_handles)}")
 
                 #TODO ピン留めされた投稿数を取得
-                pin_count = self.get_element.getElements(by=self.const_element['by_3'], value=self.const_element['value_3'])
-                self.logger.debug(f"【{index}つ目】ピン留めされた投稿数: {pin_count}")
+                pin_element = self.get_element.getElements(by=self.const_element['by_3'], value=self.const_element['value_3'])
+                self.logger.debug(f"【{index + 1}つ目】ピン留めされた投稿数: {len(pin_element)}つ")
 
-                #TODO 最初の投稿をクリック
+                # 最初の投稿をクリック
                 self.get_element.clickElement(by=self.const_element['by_3'], value=self.const_element['value_3'])
                 self.random_sleep._random_sleep(5, 10)
 
-                #TODO 日付を取得する
+                # 日付を取得する
                 post_date_str = self.get_element._get_attribute_to_element(by=self.const_element['by_4'], value=self.const_element['value_4'], attribute_value='datetime')
                 self.logger.debug(f"投稿日時: {post_date_str}")
                 self.logger.debug(f"投稿日時の型: {type(post_date_str)}")
 
-                #TODO post_date投稿日時をdatetime型に変換
+                # post_date投稿日時をdatetime型に変換
                 post_date = datetime.strptime(post_date_str, "%Y-%m-%dT%H:%M:%S.%fZ")
-                self.logger.debug(f"投稿日時の型: {type(post_date)}")
+                self.logger.debug(f"修正した取得した投稿日時の型: {type(post_date)}")
 
-                #TODO start_daytimeとend_daytimeの差分（取得したい日付リスト生成）
+                #TODO start_daytimeとend_daytimeの差分（取得したい日付リスト生成）→日付データをdatetime型に変換
                 start_daytime = datetime.strptime(start_daytime, "%Y-%m-%d")
                 self.logger.debug(f"start_daytime: {start_daytime}")
 
