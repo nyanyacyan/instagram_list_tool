@@ -109,11 +109,14 @@ class SingleProcess:
 
                 target_user_url = row_dict[self.const_gss_info["TARGET_USER_URL"]]
                 start_daytime = row_dict[self.const_gss_info["START_DAYTIME"]]
-                end_daytime = row_dict[self.const_gss_info["END_DAYTIME"]]
                 running_date = row_dict[self.const_gss_info["RUNNING_DATE"]]
                 write_error = row_dict[self.const_gss_info["WRITE_ERROR"]]
 
-                self.logger.debug(f"\ntarget_user_url: {target_user_url}\nstart_daytime: {start_daytime}\nend_daytime: {end_daytime}\nrunning_date: {running_date}\nwrite_error: {write_error}")
+                if start_daytime == "":
+                    self.logger.debug(f"スプシの{index + 1}番目の「取得開始日時」が入力されてません: {start_daytime}")
+                    # TODO 開始日付が空白の場合は、エラーにする→POPUP
+
+                self.logger.debug(f"\ntarget_user_url: {target_user_url}\nstart_daytime: {start_daytime}\nrunning_date: {running_date}\nwrite_error: {write_error}")
 
                 #TODO 新しいタブを開いてURLにアクセス
                 self.chrome.execute_script("window.open('');")
@@ -132,19 +135,17 @@ class SingleProcess:
                 self.random_sleep._random_sleep(5, 10)
 
                 #TODO 日付を取得する
-                post_date = self.get_element._get_attribute_to_element(by=self.const_element['by_4'], value=self.const_element['value_4'], attribute_value='datetime')
-                self.logger.debug(f"投稿日時: {post_date}")
-                self.logger.debug(f"投稿日時の型: {type(post_date)}")
+                post_date_str = self.get_element._get_attribute_to_element(by=self.const_element['by_4'], value=self.const_element['value_4'], attribute_value='datetime')
+                self.logger.debug(f"投稿日時: {post_date_str}")
+                self.logger.debug(f"投稿日時の型: {type(post_date_str)}")
 
                 #TODO post_date投稿日時をdatetime型に変換
-                post_date = datetime.strptime(post_date, "%Y-%m-%dT%H:%M:%S.%fZ")
+                post_date = datetime.strptime(post_date_str, "%Y-%m-%dT%H:%M:%S.%fZ")
                 self.logger.debug(f"投稿日時の型: {type(post_date)}")
 
                 #TODO start_daytimeとend_daytimeの差分（取得したい日付リスト生成）
-                start_daytime = datetime.strptime(start_daytime, "%Y-%m-%d %H:%M")
-                end_daytime = datetime.strptime(end_daytime, "%Y-%m-%d %H:%M")
+                start_daytime = datetime.strptime(start_daytime, "%Y-%m-%d")
                 self.logger.debug(f"start_daytime: {start_daytime}")
-                self.logger.debug(f"end_daytime: {end_daytime}")
 
                 #TODO 日付突合
                 if start_daytime <= post_date:

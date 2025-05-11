@@ -118,5 +118,8 @@ class SeleniumBasicOperations:
     # ランダムな待機
 
     def _random_sleep(self, min_num: int = 1, max_num: int = 3):
-        time.sleep(random.uniform(min_num, max_num))
+        sleep_time = random.uniform(min_num, max_num)
+        self.logger.debug(f"Random待機開始: {sleep_time}秒間待機")
+        time.sleep(sleep_time)
+        self.logger.debug(f"Random待機終了")
 

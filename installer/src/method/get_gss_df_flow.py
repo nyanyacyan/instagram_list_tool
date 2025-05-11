@@ -60,7 +60,7 @@ class GetGssDfFlow:
     def process(self, worksheet_name: str):
         try:
             # スプシにアクセス（Worksheet指定）
-            df = self.gss_read._get_df_gss_url(worksheet_name, json_key_name=self.const_gss_info['JSON_KEY_NAME'], sheet_url=self.const_gss_info['SHEET_URL'])
+            df = self.gss_read._get_df_gss_url(worksheet_name=worksheet_name, json_key_name=self.const_gss_info['JSON_KEY_NAME'], sheet_url=self.const_gss_info['SHEET_URL'])
             df_filtered = df[df["チェック"] == "TRUE"]
 
             df_filtered.empty
@@ -89,7 +89,7 @@ class GetGssDfFlow:
     def get_account_process(self, worksheet_name: str):
         try:
             # スプシにアクセス（Worksheet指定）
-            df = self.gss_read._get_df_gss_url(worksheet_name, json_key_name=self.const_gss_info['JSON_KEY_NAME'], sheet_url=self.const_gss_info['SHEET_URL'])
+            df = self.gss_read._get_df_gss_url(worksheet_name=worksheet_name, json_key_name=self.const_gss_info['JSON_KEY_NAME'], sheet_url=self.const_gss_info['SHEET_URL'])
             df_filtered = df[df["チェック"] == "TRUE"]
 
             df_filtered.empty

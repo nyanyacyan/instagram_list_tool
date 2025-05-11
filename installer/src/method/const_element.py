@@ -21,7 +21,7 @@ class GssInfo(Enum):
 
     INSTA = {
         "JSON_KEY_NAME": "sns-auto-430920-08274ad68b41.json",
-        "SHEET_URL": "https://docs.google.com/spreadsheets/d/1phgYYdoETJ-NjtsVUYLwrD6m6vq5hVXamBhnlcTSGec/edit?gid=1712619620#gid=1712619620",
+        "SHEET_URL": "https://docs.google.com/spreadsheets/d/1g7ycnDup8DYweQA7J1y7yT-ADrsvWSjw8ILQVdYcBEo/edit?gid=931453217#gid=931453217",
         "TARGET_WORKSHEET_NAME": "ターゲットリスト",
         "ACCOUNT_WORKSHEET_NAME": "アカウント",
 

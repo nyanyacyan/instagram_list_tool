@@ -143,7 +143,7 @@ class GetDataGSSAPI:
 
     @decoInstance.retryAction(maxRetry=3, delay=30)
     def _get_df(self, gss_info: Dict):
-        client = self.client(jsonKeyName=gss_info["JSON_KEY_NAME"])
+        client = self.client(json_key_name=gss_info["JSON_KEY_NAME"])
         gss_url = gss_info['SHEET_URL']
         worksheet_name = gss_info['WORKSHEET_NAME']
 
@@ -172,7 +172,7 @@ class GetDataGSSAPI:
 
     @decoInstance.retryAction(maxRetry=3, delay=30)
     def getDataFrameFromGss(self, gss_info: Dict):
-        client = self.client(jsonKeyName=gss_info["JSON_KEY_NAME"])
+        client = self.client(json_key_name=gss_info["JSON_KEY_NAME"])
 
         self.logger.debug(
             f"利用可能なワークシート: {client.open_by_key(gss_info['spreadsheetId']).worksheets()}"
@@ -204,7 +204,7 @@ class GetDataGSSAPI:
 
     @decoInstance.retryAction(maxRetry=3, delay=30)
     def _get_df_in_gui(self, gss_info: Dict, worksheet_name: str, gss_url: str):
-        client = self.client(jsonKeyName=gss_info["JSON_KEY_NAME"])
+        client = self.client(json_key_name=gss_info["JSON_KEY_NAME"])
 
         self.logger.debug(
             f"利用可能なワークシート: {client.open_by_key(gss_info['spreadsheetId']).worksheets()}"
@@ -232,7 +232,7 @@ class GetDataGSSAPI:
     # GUIからWorksheetを指定してdfを返す
 
     @decoInstance.retryAction(maxRetry=3, delay=30)
-    def _get_df_gss_url(self, json_key_name: str, sheet_url: str, worksheet_name: str):
+    def _get_df_gss_url(self, worksheet_name: str, json_key_name: str, sheet_url: str):
         client = self.client(json_key_name=json_key_name)
 
         self.logger.debug( f"利用可能なワークシート: {client.open_by_url(sheet_url).worksheets(worksheet_name)}" )
@@ -260,7 +260,7 @@ class GetDataGSSAPI:
     # GUIに返す
 
     def _get_all_worksheet(self, gss_info: Dict):
-        client = self.client(jsonKeyName=gss_info["JSON_KEY_NAME"])
+        client = self.client(json_key_name=gss_info["JSON_KEY_NAME"])
 
         # 対象のスプシを開く
         spreadsheet = client.open_by_url(gss_info["SHEET_URL"])
@@ -279,7 +279,7 @@ class GetDataGSSAPI:
     # GUIに返す
 
     def _sort_worksheet(self, gss_info: Dict, sort_word_list: List):
-        client = self.client(jsonKeyName=gss_info["JSON_KEY_NAME"])
+        client = self.client(json_key_name=gss_info["JSON_KEY_NAME"])
 
         # 対象のスプシを開く
         spreadsheet = client.open_by_url(gss_info["SHEET_URL"])
@@ -300,7 +300,7 @@ class GetDataGSSAPI:
 
     @decoInstance.retryAction(maxRetry=3, delay=30)
     def _get_gss_df_to_gui(self, gui_info: Dict, sheet_url: str, worksheet_name: str):
-        client = self.client(jsonKeyName=gui_info["JSON_KEY_NAME"])
+        client = self.client(json_key_name=gui_info["JSON_KEY_NAME"])
 
         # 対象のスプシを開く
         worksheet = client.open_by_url(url=sheet_url).worksheet(worksheet_name)
@@ -323,17 +323,17 @@ class GetDataGSSAPI:
     # ----------------------------------------------------------------------------------
     # スプシの認証プロパティ
 
-    def creds(self, jsonKeyName: str):
+    def creds(self, json_key_name: str):
         SCOPES = ["https://www.googleapis.com/auth/spreadsheets"]
-        jsonKeyPath = self.path._get_secret_key_path(file_name=jsonKeyName)
+        jsonKeyPath = self.path._get_secret_key_path(file_name=json_key_name)
         creds = Credentials.from_service_account_file(jsonKeyPath, scopes=SCOPES)
         return creds
 
     # ----------------------------------------------------------------------------------
     # スプシアクセスのプロパティ
 
-    def client(self, jsonKeyName: str):
-        creds = self.creds(jsonKeyName=jsonKeyName)
+    def client(self, json_key_name: str):
+        creds = self.creds(json_key_name=json_key_name)
         client = gspread.authorize(creds)
         return client
 
