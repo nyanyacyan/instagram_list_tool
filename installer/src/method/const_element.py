@@ -94,7 +94,7 @@ class ErrCommentInfo(Enum):
         "POPUP_TITLE_SHEET_INPUT_ERR": "スプレッドシートをご確認ください。",
         "POPUP_TITLE_FACEBOOK_LOGIN_ERR": "ログインが必要です",
         "POPUP_TITLE_SHEET_CHECK": "スプレッドシートのチェックされている項目がありません",
-        "": "",
+        "POPUP_TITLE_SHEET_START_DATE": "対象の「取得開始日時」の欄が入力されてないです。",
         "": "",
         "": "",
         "": "",
@@ -209,11 +209,15 @@ class Element(Enum):
 
         "by_1": 'xpath',
         "value_1": '//a[.//span[text()="検索"]]',
-        "by_2": "xpath",
-        "value_2": '//input[@aria-label="検索語句"]',
         "TEST_USERNAME": "mon_guchi",
-        "by_3": "xpath",
+
+        # ピン留めされた要素の取得
+        "by_2": "css",
+        "value_2": 'svg[aria-label="ピン留めされた投稿のアイコン"]',
+
+        # 最初の投稿の取得
         "value_3": '(//div[contains(@style, "flex-direction: column")]//a[@role="link"])[1]',
+
         "by_4": "xpath",
         "value_4": "//time",
         "by_5": "xpath",

@@ -283,3 +283,17 @@ class ClickElement:
                 document.dispatchEvent(new KeyboardEvent('keydown', {'key': 'Enter'}));
             }, 500);  // 0.5秒後に `Enter` を押す
         """)
+
+# ----------------------------------------------------------------------------------
+
+    # 新しいページを開いて対象のURLのページを開く
+
+    def _open_new_page(self, url: str):
+        self.chrome.execute_script("window.open('');")
+        self.chrome.switch_to.window(self.chrome.window_handles[-1])
+        self.chrome.get(url)
+        self.logger.info(f'新しいページを開きました: {url}')
+        self.logger.debug(f"タブの数: {len(self.chrome.window_handles)}")
+        self.clickWait.jsPageChecker(chrome=self.chrome)
+
+    # ----------------------------------------------------------------------------------

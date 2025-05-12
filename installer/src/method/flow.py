@@ -31,6 +31,8 @@ from method.base.selenium.click_element import ClickElement
 from method.base.utils.file_move import FileMove
 from method.base.selenium.google_drive_upload import GoogleDriveUpload
 from method.get_gss_df_flow import GetGssDfFlow
+from method.base.selenium.driverWait import Wait
+from method.base.utils.date_manager import DateManager
 
 # const
 from method.const_element import ( GssInfo, LoginInfo, ErrCommentInfo, PopUpComment, Element, )
@@ -83,7 +85,8 @@ class SingleProcess:
         self.popup = Popup()
         self.click_element = ClickElement(chrome=self.chrome)
         self.file_move = FileMove()
-
+        self.wait = Wait(chrome=self.chrome)
+        self.date_manager = DateManager()
 
     # **********************************************************************************
     # ----------------------------------------------------------------------------------
@@ -98,9 +101,10 @@ class SingleProcess:
 
             # ログイン
             self.login.flowLoginID(id_text=account_info['GSS_ID_TEXT'], pass_text=account_info['GSS_PASS_TEXT'], login_info=self.const_login_info)
-            self.random_sleep._random_sleep(10, 15)
+            # self.random_sleep._random_sleep(10, 15)
 
-            #TODO 対象のページが開いているかどうかを確認
+            # 対象のページが開いているかどうかを確認
+            self.wait.canWaitClick(value=self.const_element['value_1'])
 
             # ターゲットユーザーのURLリストを下に下記のフローを回す
             for index, row in target_df.iterrows():
@@ -114,25 +118,24 @@ class SingleProcess:
 
                 if start_daytime == "":
                     self.logger.debug(f"スプシの{index + 1}番目の「取得開始日時」が入力されてません: {start_daytime}")
-                    # TODO 開始日付が空白の場合は、エラーにする→POPUP
+                    # 開始日付が空白の場合は、エラーにする→POPUP
+                    self.popup.popupCommentOnly( title=self.popup_cmt['POPUP_TITLE_SHEET_INPUT_ERR'], comment=self.popup_cmt['POPUP_TITLE_SHEET_START_DATE'])
+                    raise
 
                 self.logger.debug(f"\ntarget_user_url: {target_user_url}\nstart_daytime: {start_daytime}\nrunning_date: {running_date}\nwrite_error: {write_error}")
 
                 # 新しいタブを開いてURLにアクセス
-                self.chrome.execute_script("window.open('');")
-                self.chrome.switch_to.window(self.chrome.window_handles[-1])
-                self.chrome.get(target_user_url)
-                self.random_sleep._random_sleep(5, 10)
-                self.logger.debug(f"URLにアクセス: {target_user_url}")
-                self.logger.debug(f"タブの数: {len(self.chrome.window_handles)}")
+                self.get_element._open_new_page(url=target_user_url)
+                self.random_sleep._random_sleep(2, 5)
 
-                #TODO ピン留めされた投稿数を取得
-                pin_element = self.get_element.getElements(by=self.const_element['by_3'], value=self.const_element['value_3'])
+                # ピン留めされた投稿数を取得
+                pin_element = self.get_element.getElements(by=self.const_element['by_2'], value=self.const_element['value_2'])
+                self.logger.debug(f"ピン留めされた投稿要素: {pin_element}")
                 self.logger.debug(f"【{index + 1}つ目】ピン留めされた投稿数: {len(pin_element)}つ")
 
                 # 最初の投稿をクリック
-                self.get_element.clickElement(by=self.const_element['by_3'], value=self.const_element['value_3'])
-                self.random_sleep._random_sleep(5, 10)
+                self.get_element.clickElement(value=self.const_element['value_3'])
+                self.random_sleep._random_sleep(2, 5)
 
                 # 日付を取得する
                 post_date_str = self.get_element._get_attribute_to_element(by=self.const_element['by_4'], value=self.const_element['value_4'], attribute_value='datetime')
@@ -143,12 +146,13 @@ class SingleProcess:
                 post_date = datetime.strptime(post_date_str, "%Y-%m-%dT%H:%M:%S.%fZ")
                 self.logger.debug(f"修正した取得した投稿日時の型: {type(post_date)}")
 
-                #TODO start_daytimeとend_daytimeの差分（取得したい日付リスト生成）→日付データをdatetime型に変換
-                start_daytime = datetime.strptime(start_daytime, "%Y-%m-%d")
-                self.logger.debug(f"start_daytime: {start_daytime}")
 
-                #TODO 日付突合
-                if start_daytime <= post_date:
+                # start_daytimeとend_daytimeの差分（取得したい日付リスト生成）→日付データをdatetime型に変換
+                replace_start_date = self.date_manager._replace_date(date_str=start_daytime)
+                self.logger.debug(f"取得した投稿日時: {type(post_date) {post_date}, {type(replace_start_date)} {replace_start_date}")
+
+                # 日付突合
+                if replace_start_date <= post_date:
                     self.logger.debug(f"日付チェックOK: {post_date}")
 
                     # コメントユーザー情報の取得
@@ -176,6 +180,8 @@ class SingleProcess:
                 #TODO 対象のタブを閉じる（close）
 
             # コメントされている人のユーザー名を取得
+
+            #TODO 処理が完了したことをPOPUPで表示
 
         except TimeoutError:
             timeout_comment = "タイムエラー：ログインに失敗している可能性があります。"

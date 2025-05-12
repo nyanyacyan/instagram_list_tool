@@ -74,6 +74,7 @@ class GetElement:
     # 複数
 
     def getElements(self, value: str, by: str = "xpath"):
+        self.logger.debug(f"複数の要素を取得開始: by: {by} value: {value}")
         self.clickWait.jsPageChecker(chrome=self.chrome)
         if by == "id":
             return self.chrome.find_elements(By.ID, value)
@@ -758,3 +759,14 @@ class GetElement:
         self.logger.info(f'enter keyの入力しました。')
 
     # ----------------------------------------------------------------------------------
+    # 新しいページを開いて対象のURLのページを開く
+
+    def _open_new_page(self, url: str):
+        self.chrome.execute_script("window.open('');")
+        self.chrome.switch_to.window(self.chrome.window_handles[-1])
+        self.chrome.get(url)
+        self.logger.info(f'新しいページを開きました: {url}')
+        self.clickWait.jsPageChecker(chrome=self.chrome)
+
+    # ----------------------------------------------------------------------------------
+

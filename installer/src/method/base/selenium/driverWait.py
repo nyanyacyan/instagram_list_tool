@@ -6,6 +6,7 @@
 from selenium.webdriver.chrome.webdriver import WebDriver
 from selenium.webdriver.support import expected_conditions as EC
 from selenium.webdriver.support.ui import WebDriverWait
+from selenium.webdriver.common.by import By
 
 
 # 自作モジュール
@@ -29,11 +30,11 @@ class Wait:
     # ----------------------------------------------------------------------------------
     # クリックができるまで待機
 
-    def canWaitClick(self, by: str, value: str, timeout: int = 10):
-        if WebDriverWait(self.chrome, timeout).until(
-            EC.element_to_be_clickable(by, value)
-        ):
-            self.logger.info(f"insert（input）が可能になってます")
+    def canWaitClick(self, value: str, by: str = By.XPATH, timeout: int = 20):
+        self.logger.debug(f"要素がクリック可能になるまで待機開始: {by}, {value}")
+        # クリック可能になるまで待機
+        if WebDriverWait(self.chrome, timeout).until( EC.element_to_be_clickable((by, value))):
+            self.logger.info(f"対象の要素はクリック可能な状態になってます")
         return
 
     # ----------------------------------------------------------------------------------
@@ -51,6 +52,7 @@ class Wait:
     # ページが完全に開くまで待機
 
     def loadPageWait(self, by: str, value: str, timeout: int = 5):
+        self.logger.debug(f"要素が見つかるまで待機開始: {by}, {value}")
         element = WebDriverWait(self.chrome, timeout).until(
             EC.visibility_of_element_located((by, value))
         )
@@ -93,6 +95,14 @@ class Wait:
             self.logger.debug(f"{__name__} ページが更新OK")
 
 
+# ----------------------------------------------------------------------------------
+
+    def elementWait(self, by: str, value: str, timeout: int = 10):
+        if WebDriverWait(self.chrome, timeout).until(
+            EC.presence_of_element_located((by, value))
+        ):
+            self.logger.info(f"指定の要素のDOMを確認できました")
+        return
 # ----------------------------------------------------------------------------------
 
 # **********************************************************************************
