@@ -75,3 +75,16 @@ class GssSelectCell:
         return col_letter
 
     # ----------------------------------------------------------------------------------
+    # 対象のWorksheetのAの値がNoneになっている行を取得
+
+    def _get_none_row_index(self, worksheet_name: str):
+        # worksheet_nameのA列の値を取得
+        input_str_list = list(filter(None, worksheet_name.col_values(1)))
+        self.logger.debug(f"取得したリスト: {input_str_list}")
+
+        # 取得したリストの長さを取得
+        row_index = len(input_str_list) + 1
+        self.logger.debug(f"最初にNoneになっている行数: {row_index}")
+        return row_index
+
+    # ----------------------------------------------------------------------------------

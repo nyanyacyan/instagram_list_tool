@@ -41,6 +41,7 @@ from method.const_element import ( GssInfo, LoginInfo, ErrCommentInfo, PopUpComm
 
 # flow
 from method.get_user_to_insta import GetUserToInsta
+from method.comment_flow import CommentFlow
 
 deco = Decorators()
 
@@ -72,6 +73,7 @@ class SingleProcess:
         # Flow
         self.get_gss_df_flow = GetGssDfFlow()
         self.get_user_data = GetUserToInsta(chrome=self.chrome)
+        self.comment_flow = CommentFlow(chrome=self.chrome)
 
         # インスタンス
         self.login = SingleSiteIDLogin(chrome=self.chrome)
@@ -151,6 +153,7 @@ class SingleProcess:
 
                 count = 1
 
+                #TODO pin_count分は除外
                 while True:
                     # 日付を取得する
                     post_date_str = self.get_element._get_attribute_to_element(by=self.const_element['by_4'], value=self.const_element['value_4'], attribute_value='datetime')
@@ -170,42 +173,8 @@ class SingleProcess:
                     if replace_start_date <= post_date:
                         self.logger.debug(f"日付チェックOK: {post_date}")
 
-                        # コメントユーザー情報の取得
-                        comment_elements = self.get_element.getElements(value=self.const_element['value_8'])
-                        self.logger.debug(f"コメントユーザー要素の数: {len(comment_elements)}\n{comment_elements}")
-
-                        #TODO コメントユーザー要素のリストからユーザー名を取得してリストに格納
-                        comment_user_url_list = []
-                        for i, element in enumerate(comment_elements):
-                            # ユーザー名を取得
-                            comment_a_tag = element.find_element(By.XPATH, f'//a[contains(@href, "/") and @role="link"][{i}]')
-                            user_url = comment_a_tag.get_attribute('href')
-                            comment_user_url_list.append(user_url)
-                        self.logger.debug(f"コメントユーザー名リスト: {comment_user_url_list}")
-
-                        #TODO URLからusernameを取得
-                        comment_dict_data = {
-                            "user_url": target_user_url,
-                            "user_name": target_user_url,
-                            "like_or_comment": target_user_url,
-                            "timestamp": target_user_url,
-                        }
-                        # 対象のワークシートへアクセス
-
-                        # 対象のワークシートの一番最初のnoneの行を取得
-
-                        #TODO 対象のworksheetへ書込
-                        # ユーザー名
-
-                        # ユーザーURL
-
-                        # いいね or コメント → コメント
-
-                        # タイムスタンプ
-
-
-                        # 対象のスプシにコメントデータを書き込む
-
+                        #* コメントFlowの実施
+                        self.comment_flow.process(target_worksheet_name=target_worksheet_name)
 
 
                         #TODO いいねの取得→userUrlのみにする

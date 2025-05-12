@@ -111,6 +111,17 @@ class GetUserToInsta:
             self.chrome.quit()
             self.popup.popupCommentOnly( popupTitle=self.const_err_cmt_dict["POPUP_TITLE_SHEET_INPUT_ERR"], comment=self.const_err_cmt_dict["POPUP_TITLE_SHEET_CHECK"], )
 
+    # ----------------------------------------------------------------------------------
+    # スプシに書き込む
+
+    # ----------------------------------------------------------------------------------
+    # 既存ユーザーと重複確認
+
+    # ----------------------------------------------------------------------------------
+    # DataFrameにあるユーザー名を取得する
+
+    # ----------------------------------------------------------------------------------
+    # DataFrameを取得する
 
     # ----------------------------------------------------------------------------------
 
@@ -159,5 +170,174 @@ class GetUserToInsta:
         self.logger.debug(f"最終的に取得したユーザー名: {all_usernames} 合計: {len(set(all_usernames))}件")
         self.logger.debug(f"すべてのユーザーURL: {all_user_url} 合計: {len(all_user_url)}")
         return all_usernames, all_user_url
+
+    # ----------------------------------------------------------------------------------
+    # 書込データをスプシに書き込む
+
+    def process(self, target_worksheet_name: str):
+        try:
+            # 書込データを取得
+            filtered_write_data, target_df = self._get_filtered_write_data(target_worksheet_name=target_worksheet_name)
+
+            None_row_num = len(target_df) + 1
+
+            for data in filtered_write_data:
+                self.logger.debug(f"書込データ: {data}")
+
+                # 辞書データをリストに変換
+                write_data_list = list(data.values())
+                self.logger.debug(f"書込データリスト: {write_data_list}")
+
+                cell = f"A{None_row_num}"
+                self.logger.debug(f"書込データ: {data} を {target_worksheet_name} の {cell} 行目に書き込みます。")
+
+                # 書込データのインデックスを取得
+                self.gss_write.write_data_by_url( gss_info=self.const_gss_info, cell=cell, input_data=write_data_list )
+                self.logger.debug(f"書込データ: {data} を {target_worksheet_name} の {cell} 行目に書き込みました。")
+
+                None_row_num += 1
+                self.logger.debug(f"次の書込データの行数: {None_row_num}")
+
+            self.logger.info(f"コメントユーザーをスプシに書込完了（全{len(filtered_write_data)}行）")
+            return filtered_write_data
+
+        except Exception as e:
+            process_error_comment = ( f"{self.__class__.__name__} 処理中にエラーが発生 {e}" )
+            self.logger.error(process_error_comment)
+            self.chrome.quit()
+            self.popup.popupCommentOnly( popupTitle=self.const_err_cmt_dict["POPUP_TITLE_SHEET_INPUT_ERR"], comment=self.const_err_cmt_dict["POPUP_TITLE_SHEET_CHECK"], )
+
+    #! ----------------------------------------------------------------------------------
+    # 既存のユーザー名を取得し、書込データをフィルタリングする
+
+    def _get_filtered_write_data(self, target_worksheet_name: str):
+        try:
+            write_data = self._generate_write_data()
+
+            existing_username_list, target_df = self._get_written_username_list(target_worksheet_name=target_worksheet_name)
+
+            filtered_write_data = [
+                data for data in write_data if data['username'] not in existing_username_list
+            ]
+
+            self.logger.debug(f"フィルタリング後の書込データ: {filtered_write_data}")
+            return filtered_write_data, target_df
+
+        except Exception as e:
+            process_error_comment = ( f"{self.__class__.__name__} 処理中にエラーが発生 {e}" )
+            self.logger.error(process_error_comment)
+            self.chrome.quit()
+            self.popup.popupCommentOnly( popupTitle=self.const_err_cmt_dict["POPUP_TITLE_SHEET_INPUT_ERR"], comment=self.const_err_cmt_dict["POPUP_TITLE_SHEET_CHECK"], )
+
+
+    # ----------------------------------------------------------------------------------
+
+    def _get_written_username_list(self, target_worksheet_name: str):
+        try:
+            # 対象のWorksheetの現在のDataFrameを取得
+            target_df = self.get_gss_df_flow.process(worksheet_name=target_worksheet_name)
+            self.logger.debug(f"{target_worksheet_name}の入力前df: {target_df}")
+
+            username_series = target_df[self.const_comment['TARGET_INPUT_USERNAME']]
+            self.logger.debug(f"ユーザー名のSeries: {username_series}")
+
+            existing_username_list = username_series.tolist()
+            self.logger.debug(f"ユーザー名のリスト: {existing_username_list}")
+
+            return existing_username_list, target_df
+
+        except Exception as e:
+            process_error_comment = ( f"{self.__class__.__name__} 処理中にエラーが発生 {e}" )
+            self.logger.error(process_error_comment)
+            self.chrome.quit()
+            self.popup.popupCommentOnly( popupTitle=self.const_err_cmt_dict["POPUP_TITLE_SHEET_INPUT_ERR"], comment=self.const_err_cmt_dict["POPUP_TITLE_SHEET_CHECK"], )
+
+    # ----------------------------------------------------------------------------------
+    # いいねのユーザーデータを作成する
+
+    def _generate_write_data(self):
+        try:
+            # モーダルを取得
+            modal_element = self._get_modal_element()
+
+            # いいねユーザー要素のリストを取得
+            good_elements = self._get_good_elements(modal_element=modal_element)
+
+            # 重複を除外する
+            unique_checker = set()
+            write_data = []
+            for i, element in enumerate(good_elements):
+                # ユーザーURLを取得
+                user_url =self._get_good_user_url(good_element=element)
+
+                # InstagramのユーザーURLからユーザー名を取得
+                username = self._get_good_user_name(user_url=user_url)
+
+                comment_dict_data = {
+                    "username": username,
+                    "user_url": user_url,
+                    "like_or_comment": self.self.const_comment['INPUT_WORD_GOOD'],
+                    "timestamp": self.timestamp,
+                }
+
+                # 重複を除外する
+                if username not in unique_checker:
+                    unique_checker.add(username)
+
+                    # コメントデータをリストに追加
+                    write_data.append(comment_dict_data)
+                else:
+                    # 重複している場合は、スキップする
+                    self.logger.debug(f"重複ユーザー名: {username} はスキップされました。")
+
+            self.logger.debug(f"書込データ: {write_data}")
+            return write_data
+
+        except Exception as e:
+            process_error_comment = ( f"{self.__class__.__name__} 処理中にエラーが発生 {e}" )
+            self.logger.error(process_error_comment)
+            self.chrome.quit()
+            self.popup.popupCommentOnly( popupTitle=self.const_err_cmt_dict["POPUP_TITLE_SHEET_INPUT_ERR"], comment=self.const_err_cmt_dict["POPUP_TITLE_SHEET_CHECK"], )
+
+    # ----------------------------------------------------------------------------------
+    # コメント要素からユーザー名を取得する
+
+    def _get_good_user_url(self, good_element: WebElement, element_num: int):
+        self.logger.debug(f"コメント要素: {good_element}")
+        self.logger.debug(f"コメント要素のインデックス: {element_num}")
+        # ユーザー名を取得
+        # comment_a_tag = good_element.find_element(By.XPATH, f'//a[contains(@href, "/") and @role="link"]')
+
+        user_url = good_element.get_attribute('href')
+        self.logger.debug(f"ユーザーURL: {user_url}")
+
+        return user_url
+
+    # ----------------------------------------------------------------------------------
+    # InstagramのユーザーURLからユーザー名を取得する
+
+    def _get_good_user_name(self, good_user_url: str):
+        # URL部分を除去してユーザー名を取得
+        username = good_user_url.replace("https://www.instagram.com/", "").strip("/")
+        self.logger.debug(f"ユーザー名: {username}")
+        return username
+
+    # ----------------------------------------------------------------------------------
+    # ユーザー要素を取得
+
+    def _get_good_elements(self, modal_element: WebElement):
+        good_elements = self.get_element.filterElements(parentElement=modal_element, value=self.const_element['value_11'])
+        self.logger.debug(f"いいねのユーザー要素のリスト: {good_elements}")
+        return good_elements
+
+
+    # ----------------------------------------------------------------------------------
+    # modalを取得
+
+    def _get_modal_element(self) -> WebElement:
+        # モーダルの要素を取得
+        modal_element = self.get_element.getElement(value=self.const_element['value_9'])
+        self.logger.debug(f"モーダル要素: {modal_element}")
+        return modal_element
 
     # ----------------------------------------------------------------------------------

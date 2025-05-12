@@ -28,16 +28,21 @@ class GssInfo(Enum):
         # account
         "ACCOUNT_ID": "ID",
         "ACCOUNT_PASS": "Pass",
-        "": "",
-        "": "",
+
 
         # column名
         "CHECK": "チェック",
+
         "NAME": "ユーザー名",
         "TARGET_USER_URL": "アカウントURL",
         "TARGET_WORKSHEET_URL": "出力先",
         "TARGET_WORKSHEET_NAME": "worksheet名",
 
+        # target_worksheetのcolumn名
+        "TARGET_INPUT_USERNAME": "ユーザー名",
+        "TARGET_INPUT_USERNAME": "URL",
+        "TARGET_INPUT_USERNAME": "コメント or いいね",
+        "TARGET_INPUT_USERNAME": "追加日",
 
         "START_DAYTIME": "取得開始日時",
         "END_DAYTIME": "取得終了日時",
@@ -109,77 +114,12 @@ class PopUpComment(Enum):
 
 # ----------------------------------------------------------------------------------
 
-
-class FollowerAnalysisElement(Enum):
-    INSTA = {
-        "ZIP_FILE_HEAD_NAME": "Instagramマイアカウント フォロワー分析",
-        "ZIP_EXTENSION": ".zip",
-        "CSV_FILE_HEAD_NAME": "フォロワーチャート",
-        "CSV_EXTENSION": ".csv",
-        "DOWNLOAD_DIR_NAME": "downloads",
-        "UPLOAD_DIR_NAME": "uploads_to_google_drive",
-
-        "ANALYSIS_BY": "",
-        "ANALYSIS_VOL": "//a[contains(text(), 'フォロワー分析')]",
-        "BULK_DOWNLOAD_BTN_BY": "",
-        "BULK_DOWNLOAD_BTN_VOL": "//button[.//span[contains(text(), '一括DL')]]",
-        "": "",
-        "": "",
-    }
-
-
-# ----------------------------------------------------------------------------------
-
-
-class EngagementAnalysisElement(Enum):
-    INSTA = {
-        "ZIP_FILE_HEAD_NAME": "Instagramマイアカウント エンゲージメント分析",
-
-        "ZIP_EXTENSION": ".zip",
-        "CSV_FILE_HEAD_FIRST_NAME": "エンゲージメントの推移",
-        "CSV_FILE_HEAD_SECOND_NAME": "プロフィールインサイトチャート",
-
-        "CSV_EXTENSION": ".csv",
-        "DOWNLOAD_DIR_NAME": "downloads",
-        "UPLOAD_DIR_NAME": "uploads_to_google_drive",
-
-        "ANALYSIS_BY": "",
-        "ANALYSIS_VOL": "//a[contains(text(), 'エンゲージメント分析')]",
-        "BULK_DOWNLOAD_BTN_BY": "",
-        "BULK_DOWNLOAD_BTN_VOL": "//button[.//span[contains(text(), '一括DL')]]",
-        "": "",
-        "": "",
-    }
-
-
-# ----------------------------------------------------------------------------------
-
-
-class PostAnalysisElement(Enum):
-    INSTA = {
-        "ZIP_FILE_HEAD_NAME": "Instagramマイアカウント 投稿一覧",
-        "ZIP_EXTENSION": ".zip",
-        "CSV_FILE_HEAD_NAME": "インサイト投稿一覧",
-        "CSV_EXTENSION": ".csv",
-        "DOWNLOAD_DIR_NAME": "downloads",
-        "UPLOAD_DIR_NAME": "uploads_to_google_drive",
-
-        "ANALYSIS_BY": "",
-        "ANALYSIS_VOL": "//a[contains(text(), '投稿一覧')]",
-        "BULK_DOWNLOAD_BTN_BY": "",
-        "BULK_DOWNLOAD_BTN_VOL": "//button[.//span[contains(text(), '一括DL')]]",
-        "": "",
-        "": "",
-    }
-
-
-# ----------------------------------------------------------------------------------
-
-
 class CommentFlowElement(Enum):
     INSTA = {
         "GSS_COLUMN_NAME": "コメント or いいね",
         "INPUT_WORD_COMMENT": "コメント",
+        "INPUT_WORD_GOOD": "いいね",
+
     }
 
 
@@ -216,9 +156,11 @@ class Element(Enum):
 
         # コメントユーザー要素
         "value_8": '//a[@role="link" and normalize-space(text()) != ""]',
-        "": "",
-        "": "",
-        "": "",
+
+        # いいねのmodal要素
+        "value_9": '//div[@role="dialog"]//div[contains(@style, "overflow")]',
+        "value_10": './/a[starts-with(@href, "/") and string-length(@href) > 1]',
+        "value_11": './/a[starts-with(@href, "/") and string-length(@href) > 1]',
         "": "",
         "": "",
         "": "",
