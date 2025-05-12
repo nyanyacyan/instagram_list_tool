@@ -178,8 +178,7 @@ class SingleProcess:
                         #* コメントFlowの実施
                         self.comment_flow.process(target_worksheet_name=target_worksheet_name)
 
-
-                        #TODO いいねFlowの実施
+                        #* いいねFlowの実施
                         self.good_flow.process(target_worksheet_name=target_worksheet_name)
 
                         #TODO いいねのモーダルを閉じる（close）
