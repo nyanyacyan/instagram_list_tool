@@ -218,12 +218,23 @@ class Element(Enum):
         # 最初の投稿の取得
         "value_3": '(//div[contains(@style, "flex-direction: column")]//a[@role="link"])[1]',
 
+        # 日付要素
         "by_4": "xpath",
         "value_4": "//time",
+
+        # いいねボタン
         "by_5": "xpath",
         "value_5": '//span[contains(text(), "いいね！")]',
-        "value_6": '//button//*[name()="svg"][@aria-label="次へ"]',
-        "": "",
+
+        # いいねのuserリストの取得
+        "value_6": '//div[@role="dialog"]//div[contains(@style, "overflow")]',
+
+
+        # 次への要素
+        "value_7": '//button//*[name()="svg"][@aria-label="次へ"]',
+
+        # コメントユーザー要素
+        "value_8": '//a[@role="link" and normalize-space(text()) != ""]',
         "": "",
         "": "",
         "": "",

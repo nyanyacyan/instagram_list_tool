@@ -77,21 +77,30 @@ class GetElement:
         self.logger.debug(f"複数の要素を取得開始: by: {by} value: {value}")
         self.clickWait.jsPageChecker(chrome=self.chrome)
         if by == "id":
-            return self.chrome.find_elements(By.ID, value)
+            elements = self.chrome.find_elements(By.ID, value)
+
         elif by == "css":
-            return self.chrome.find_elements(By.CSS_SELECTOR, value)
+            elements = self.chrome.find_elements(By.CSS_SELECTOR, value)
         elif by == "xpath":
-            return self.chrome.find_elements(By.XPATH, value)
+            elements = self.chrome.find_elements(By.XPATH, value)
         elif by == "tag":
-            return self.chrome.find_elements(By.TAG_NAME, value)
+            elements = self.chrome.find_elements(By.TAG_NAME, value)
         elif by == "link":
-            return self.chrome.find_elements(By.LINK_TEXT, value)
+            elements = self.chrome.find_elements(By.LINK_TEXT, value)
         elif by == "name":
-            return self.chrome.find_elements(By.NAME, value)
+            elements = self.chrome.find_elements(By.NAME, value)
         elif by == "class":
-            return self.chrome.find_elements(By.CLASS_NAME, value)
+            elements = self.chrome.find_elements(By.CLASS_NAME, value)
         else:
             raise ValueError("定義してるもの以外のものを指定してます")
+
+        self.logger.debug(f"複数の要素を取得: {len(elements)}個の要素を取得\n{elements}")
+
+        if not elements:
+            self.logger.error(f"要素が見つかりませんでした: {value}")
+            return None
+
+        return elements
 
     # ----------------------------------------------------------------------------------
     # 要素を絞り込み

@@ -40,7 +40,7 @@ from method.base.utils.file_move import FileMove
 from method.base.selenium.google_drive_upload import GoogleDriveUpload
 
 # const
-from method.const_element import GssInfo, LoginInfo, ErrCommentInfo, PopUpComment
+from method.const_element import GssInfo, LoginInfo, ErrCommentInfo, PopUpComment, Element
 
 deco = Decorators()
 
@@ -72,6 +72,7 @@ class GetUserToInsta:
         self.const_login_info = LoginInfo.INSTA.value
         self.const_err_cmt_dict = ErrCommentInfo.INSTA.value
         self.popup_cmt = PopUpComment.INSTA.value
+        self.const_element = Element.INSTA.value
 
         self.login = SingleSiteIDLogin(chrome=chrome)
         self.random_sleep = SeleniumBasicOperations(chrome=chrome)

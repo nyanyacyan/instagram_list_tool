@@ -87,6 +87,8 @@ class SingleProcess:
         self.file_move = FileMove()
         self.wait = Wait(chrome=self.chrome)
         self.date_manager = DateManager()
+        self.select_cell = GssSelectCell()
+
 
     # **********************************************************************************
     # ----------------------------------------------------------------------------------
@@ -101,13 +103,13 @@ class SingleProcess:
 
             # ログイン
             self.login.flowLoginID(id_text=account_info['GSS_ID_TEXT'], pass_text=account_info['GSS_PASS_TEXT'], login_info=self.const_login_info)
-            # self.random_sleep._random_sleep(10, 15)
 
             # 対象のページが開いているかどうかを確認
             self.wait.canWaitClick(value=self.const_element['value_1'])
 
             # ターゲットユーザーのURLリストを下に下記のフローを回す
             for index, row in target_df.iterrows():
+                row_num = index + 2
                 row_dict = row.to_dict()
                 self.logger.debug(f"row_dict: {row_dict}")
 
@@ -115,6 +117,10 @@ class SingleProcess:
                 start_daytime = row_dict[self.const_gss_info["START_DAYTIME"]]
                 running_date = row_dict[self.const_gss_info["RUNNING_DATE"]]
                 write_error = row_dict[self.const_gss_info["WRITE_ERROR"]]
+
+                gss_date_cell = self.select_cell.get_cell_address(gss_row_dict=row_dict, col_name=self.const_gss_info["RUNNING_DATE"], row_num=row_num)
+                gss_err_cell = self.select_cell.get_cell_address(gss_row_dict=row_dict, col_name=self.const_gss_info["WRITE_ERROR"], row_num=row_num)
+
 
                 if start_daytime == "":
                     self.logger.debug(f"スプシの{index + 1}番目の「取得開始日時」が入力されてません: {start_daytime}")
@@ -149,7 +155,7 @@ class SingleProcess:
 
                 # start_daytimeとend_daytimeの差分（取得したい日付リスト生成）→日付データをdatetime型に変換
                 replace_start_date = self.date_manager._replace_date(date_str=start_daytime)
-                self.logger.debug(f"取得した投稿日時: {type(post_date) {post_date}, {type(replace_start_date)} {replace_start_date}")
+                self.logger.debug(f"取得した投稿日時: {type(post_date)} {post_date}, {type(replace_start_date)} {replace_start_date}")
 
                 # 日付突合
                 if replace_start_date <= post_date:
@@ -157,17 +163,30 @@ class SingleProcess:
 
                     # コメントユーザー情報の取得
                     # comment_elements = self.chrome.find_elements(By.XPATH, '//a[@role="link" and normalize-space(text()) != ""]')
-                    comment_elements = self.get_element.getElements(value='//a[@role="link" and normalize-space(text()) != ""]')
-                    self.logger.debug(f"コメント要素: {comment_elements}")
+                    comment_elements = self.get_element.getElements(value=self.const_element['value_8'])
+                    self.logger.debug(f"コメントユーザー要素の数: {len(comment_elements)}\n{comment_elements}")
 
-                    # いいねの取得
+                    #TODO コメントユーザー要素のリストからユーザー名を取得してリストに格納
+                    comment_user_url_list = []
+                    for i, element in enumerate(comment_elements):
+                        # ユーザー名を取得
+                        comment_a_tag = element.find_element(By.XPATH, f'//a[contains(@href, "/") and @role="link"][{i}]')
+                        user_url = comment_a_tag.get_attribute('href')
+                        comment_user_url_list.append(user_url)
+                    self.logger.debug(f"コメントユーザー名リスト: {comment_user_url_list}")
+
+                    #TODO URLからusernameを取得
+
+                    #TODO いいねの取得→userUrlのみにする
                     all_usernames, all_user_url = self.get_user_data.process()
 
+                    #TODO set()で重複排除
+
+                    #TODO 次へのボタンを押下
+
                     #TODO 日付チェックOKフローの実行→取得したデータをGSSに書き込む
-                    self.gss_write.write_data_by_url( gss_info=gss_info, cell=complete_cell, input_data=self.timestamp_two )
 
                     #TODO 書き込みエラーのフラグを立てる
-                    self.gss_write.write_data_by_url( gss_info=gss_info, cell=write_error, input_data="NG" )
 
                 else:
                     self.logger.debug(f"日付チェック対象外の日付: {post_date}")
@@ -187,10 +206,11 @@ class SingleProcess:
             timeout_comment = "タイムエラー：ログインに失敗している可能性があります。"
             self.logger.error(f"{self.__class__.__name__} {timeout_comment}")
             # エラータイムスタンプ
-            self.gss_write.write_data_by_url( gss_info=gss_info, cell=err_datetime_cell, input_data=self.timestamp )
+            self.gss_write.write_data_by_url( gss_info=self.const_gss_info, cell=gss_date_cell, input_data=self.timestamp_two )
 
             # エラーコメント
-            self.gss_write.write_data_by_url( gss_info=gss_info, cell=err_cmt_cell, input_data=timeout_comment )
+            self.gss_write.write_data_by_url( gss_info=self.const_gss_info, cell=gss_err_cell, input_data="NG" )
+
 
         except Exception as e:
             process_error_comment = ( f"{self.__class__.__name__} 処理中にエラーが発生 {e}" )
