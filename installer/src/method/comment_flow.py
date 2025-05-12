@@ -39,6 +39,7 @@ from method.base.utils.popup import Popup
 from method.base.selenium.click_element import ClickElement
 from method.base.utils.file_move import FileMove
 from method.base.selenium.google_drive_upload import GoogleDriveUpload
+from method.get_gss_df_flow import GetGssDfFlow
 
 # const
 from method.const_element import GssInfo, LoginInfo, ErrCommentInfo, PopUpComment, Element, CommentFlowElement
@@ -55,6 +56,9 @@ class CommentFlow:
         # logger
         self.getLogger = Logger()
         self.logger = self.getLogger.getLogger()
+
+        # chrome
+        self.chrome = chrome
 
         # インスタンス
         self.time_manager = TimeManager()
@@ -90,6 +94,7 @@ class CommentFlow:
         self.popup = Popup()
         self.click_element = ClickElement(chrome=chrome)
         self.file_move = FileMove()
+        self.get_gss_df_flow = GetGssDfFlow()
 
     ####################################################################################
     #! ----------------------------------------------------------------------------------
@@ -157,11 +162,12 @@ class CommentFlow:
         try:
             # 対象のWorksheetの現在のDataFrameを取得
             target_df = self.get_gss_df_flow.process(worksheet_name=target_worksheet_name)
-            self.logger.debug(f"{target_worksheet_name}の入力前df: {target_df}")
+            self.logger.debug(f"{target_worksheet_name}の入力前df: {target_df.head()}")
 
             username_series = target_df[self.const_comment['TARGET_INPUT_USERNAME']]
             self.logger.debug(f"ユーザー名のSeries: {username_series}")
 
+            # シリーズの値をリストに変換
             existing_username_list = username_series.tolist()
             self.logger.debug(f"ユーザー名のリスト: {existing_username_list}")
 

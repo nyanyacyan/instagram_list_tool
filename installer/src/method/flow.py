@@ -40,7 +40,7 @@ from method.base.utils.sub_date_mrg import DateManager
 from method.const_element import ( GssInfo, LoginInfo, ErrCommentInfo, PopUpComment, Element, )
 
 # flow
-from method.get_user_to_insta import GetUserToInsta
+from installer.src.method.good_flow import GetUserToInsta
 from method.comment_flow import CommentFlow
 
 deco = Decorators()

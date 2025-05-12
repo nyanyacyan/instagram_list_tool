@@ -38,6 +38,7 @@ from method.base.utils.popup import Popup
 from method.base.selenium.click_element import ClickElement
 from method.base.utils.file_move import FileMove
 from method.base.selenium.google_drive_upload import GoogleDriveUpload
+from method.get_gss_df_flow import GetGssDfFlow
 
 # const
 from method.const_element import GssInfo, LoginInfo, ErrCommentInfo, PopUpComment, Element
@@ -54,6 +55,9 @@ class GetUserToInsta:
         # logger
         self.getLogger = Logger()
         self.logger = self.getLogger.getLogger()
+
+        # chrome
+        self.chrome = chrome
 
         # インスタンス
         self.time_manager = TimeManager()
@@ -87,6 +91,7 @@ class GetUserToInsta:
         self.popup = Popup()
         self.click_element = ClickElement(chrome=chrome)
         self.file_move = FileMove()
+        self.get_gss_df_flow = GetGssDfFlow()
 
     ####################################################################################
     # ----------------------------------------------------------------------------------
@@ -236,11 +241,12 @@ class GetUserToInsta:
         try:
             # 対象のWorksheetの現在のDataFrameを取得
             target_df = self.get_gss_df_flow.process(worksheet_name=target_worksheet_name)
-            self.logger.debug(f"{target_worksheet_name}の入力前df: {target_df}")
+            self.logger.debug(f"{target_worksheet_name}の入力前df: {target_df.head()}")
 
             username_series = target_df[self.const_comment['TARGET_INPUT_USERNAME']]
             self.logger.debug(f"ユーザー名のSeries: {username_series}")
 
+            # シリーズの値をリストに変換
             existing_username_list = username_series.tolist()
             self.logger.debug(f"ユーザー名のリスト: {existing_username_list}")
 
@@ -273,7 +279,7 @@ class GetUserToInsta:
                 # InstagramのユーザーURLからユーザー名を取得
                 username = self._get_good_user_name(user_url=user_url)
 
-                comment_dict_data = {
+                good_dict_data = {
                     "username": username,
                     "user_url": user_url,
                     "like_or_comment": self.self.const_comment['INPUT_WORD_GOOD'],
@@ -285,7 +291,7 @@ class GetUserToInsta:
                     unique_checker.add(username)
 
                     # コメントデータをリストに追加
-                    write_data.append(comment_dict_data)
+                    write_data.append(good_dict_data)
                 else:
                     # 重複している場合は、スキップする
                     self.logger.debug(f"重複ユーザー名: {username} はスキップされました。")
