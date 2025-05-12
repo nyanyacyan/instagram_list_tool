@@ -32,7 +32,9 @@ from method.base.utils.file_move import FileMove
 from method.base.selenium.google_drive_upload import GoogleDriveUpload
 from method.get_gss_df_flow import GetGssDfFlow
 from method.base.selenium.driverWait import Wait
-from method.base.utils.date_manager import DateManager
+# from method.base.utils.date_manager import DateManager
+from method.base.utils.sub_date_mrg import DateManager
+
 
 # const
 from method.const_element import ( GssInfo, LoginInfo, ErrCommentInfo, PopUpComment, Element, )
@@ -117,7 +119,10 @@ class SingleProcess:
                 start_daytime = row_dict[self.const_gss_info["START_DAYTIME"]]
                 running_date = row_dict[self.const_gss_info["RUNNING_DATE"]]
                 write_error = row_dict[self.const_gss_info["WRITE_ERROR"]]
+                target_worksheet_url = row_dict[self.const_gss_info["TARGET_WORKSHEET_URL"]]
+                target_worksheet_name = row_dict[self.const_gss_info["TARGET_WORKSHEET_NAME"]]
 
+                # それぞれ書き出すセルアドレスを取得
                 gss_date_cell = self.select_cell.get_cell_address(gss_row_dict=row_dict, col_name=self.const_gss_info["RUNNING_DATE"], row_num=row_num)
                 gss_err_cell = self.select_cell.get_cell_address(gss_row_dict=row_dict, col_name=self.const_gss_info["WRITE_ERROR"], row_num=row_num)
 
@@ -128,7 +133,7 @@ class SingleProcess:
                     self.popup.popupCommentOnly( title=self.popup_cmt['POPUP_TITLE_SHEET_INPUT_ERR'], comment=self.popup_cmt['POPUP_TITLE_SHEET_START_DATE'])
                     raise
 
-                self.logger.debug(f"\ntarget_user_url: {target_user_url}\nstart_daytime: {start_daytime}\nrunning_date: {running_date}\nwrite_error: {write_error}")
+                self.logger.debug(f"\ntarget_user_url: {target_user_url}\nstart_daytime: {start_daytime}\nrunning_date: {running_date}\nwrite_error: {write_error}\ntarget_worksheet_url: {target_worksheet_url}\ntarget_worksheet_name: {target_worksheet_name}\n")
 
                 # 新しいタブを開いてURLにアクセス
                 self.get_element._open_new_page(url=target_user_url)
@@ -136,67 +141,108 @@ class SingleProcess:
 
                 # ピン留めされた投稿数を取得
                 pin_element = self.get_element.getElements(by=self.const_element['by_2'], value=self.const_element['value_2'])
+                pin_count = len(pin_element)
                 self.logger.debug(f"ピン留めされた投稿要素: {pin_element}")
-                self.logger.debug(f"【{index + 1}つ目】ピン留めされた投稿数: {len(pin_element)}つ")
+                self.logger.debug(f"【{index + 1}つ目】ピン留めされた投稿数: {pin_count}つ")
 
                 # 最初の投稿をクリック
                 self.get_element.clickElement(value=self.const_element['value_3'])
                 self.random_sleep._random_sleep(2, 5)
 
-                # 日付を取得する
-                post_date_str = self.get_element._get_attribute_to_element(by=self.const_element['by_4'], value=self.const_element['value_4'], attribute_value='datetime')
-                self.logger.debug(f"投稿日時: {post_date_str}")
-                self.logger.debug(f"投稿日時の型: {type(post_date_str)}")
+                count = 1
 
-                # post_date投稿日時をdatetime型に変換
-                post_date = datetime.strptime(post_date_str, "%Y-%m-%dT%H:%M:%S.%fZ")
-                self.logger.debug(f"修正した取得した投稿日時の型: {type(post_date)}")
+                while True:
+                    # 日付を取得する
+                    post_date_str = self.get_element._get_attribute_to_element(by=self.const_element['by_4'], value=self.const_element['value_4'], attribute_value='datetime')
+                    self.logger.debug(f"投稿日時: {post_date_str}")
+                    self.logger.debug(f"投稿日時の型: {type(post_date_str)}")
 
-
-                # start_daytimeとend_daytimeの差分（取得したい日付リスト生成）→日付データをdatetime型に変換
-                replace_start_date = self.date_manager._replace_date(date_str=start_daytime)
-                self.logger.debug(f"取得した投稿日時: {type(post_date)} {post_date}, {type(replace_start_date)} {replace_start_date}")
-
-                # 日付突合
-                if replace_start_date <= post_date:
-                    self.logger.debug(f"日付チェックOK: {post_date}")
-
-                    # コメントユーザー情報の取得
-                    # comment_elements = self.chrome.find_elements(By.XPATH, '//a[@role="link" and normalize-space(text()) != ""]')
-                    comment_elements = self.get_element.getElements(value=self.const_element['value_8'])
-                    self.logger.debug(f"コメントユーザー要素の数: {len(comment_elements)}\n{comment_elements}")
-
-                    #TODO コメントユーザー要素のリストからユーザー名を取得してリストに格納
-                    comment_user_url_list = []
-                    for i, element in enumerate(comment_elements):
-                        # ユーザー名を取得
-                        comment_a_tag = element.find_element(By.XPATH, f'//a[contains(@href, "/") and @role="link"][{i}]')
-                        user_url = comment_a_tag.get_attribute('href')
-                        comment_user_url_list.append(user_url)
-                    self.logger.debug(f"コメントユーザー名リスト: {comment_user_url_list}")
-
-                    #TODO URLからusernameを取得
-
-                    #TODO いいねの取得→userUrlのみにする
-                    all_usernames, all_user_url = self.get_user_data.process()
-
-                    #TODO set()で重複排除
-
-                    #TODO 次へのボタンを押下
-
-                    #TODO 日付チェックOKフローの実行→取得したデータをGSSに書き込む
-
-                    #TODO 書き込みエラーのフラグを立てる
-
-                else:
-                    self.logger.debug(f"日付チェック対象外の日付: {post_date}")
+                    # post_date投稿日時をdatetime型に変換
+                    post_date = datetime.strptime(post_date_str, "%Y-%m-%dT%H:%M:%S.%fZ")
+                    self.logger.debug(f"修正した取得した投稿日時の型: {type(post_date)}")
 
 
-                #TODO 日付チェックOKフローの実行→取得したデータをGSSに書き込む
+                    # start_daytimeとend_daytimeの差分（取得したい日付リスト生成）→日付データをdatetime型に変換
+                    replace_start_date = self.date_manager._replace_date(date_str=start_daytime)
+                    self.logger.debug(f"取得した投稿日時: {type(post_date)} {post_date}, {type(replace_start_date)} {replace_start_date}")
 
-                #TODO 日付チェックNGフローの実行
+                    # 日付突合
+                    if replace_start_date <= post_date:
+                        self.logger.debug(f"日付チェックOK: {post_date}")
 
-                #TODO 対象のタブを閉じる（close）
+                        # コメントユーザー情報の取得
+                        comment_elements = self.get_element.getElements(value=self.const_element['value_8'])
+                        self.logger.debug(f"コメントユーザー要素の数: {len(comment_elements)}\n{comment_elements}")
+
+                        #TODO コメントユーザー要素のリストからユーザー名を取得してリストに格納
+                        comment_user_url_list = []
+                        for i, element in enumerate(comment_elements):
+                            # ユーザー名を取得
+                            comment_a_tag = element.find_element(By.XPATH, f'//a[contains(@href, "/") and @role="link"][{i}]')
+                            user_url = comment_a_tag.get_attribute('href')
+                            comment_user_url_list.append(user_url)
+                        self.logger.debug(f"コメントユーザー名リスト: {comment_user_url_list}")
+
+                        #TODO URLからusernameを取得
+                        comment_dict_data = {
+                            "user_url": target_user_url,
+                            "user_name": target_user_url,
+                            "like_or_comment": target_user_url,
+                            "timestamp": target_user_url,
+                        }
+                        # 対象のワークシートへアクセス
+
+                        # 対象のワークシートの一番最初のnoneの行を取得
+
+                        #TODO 対象のworksheetへ書込
+                        # ユーザー名
+
+                        # ユーザーURL
+
+                        # いいね or コメント → コメント
+
+                        # タイムスタンプ
+
+
+                        # 対象のスプシにコメントデータを書き込む
+
+
+
+                        #TODO いいねの取得→userUrlのみにする
+                        all_usernames, all_user_url = self.get_user_data.process()
+
+                        #TODO set()で重複排除
+
+
+                        #TODO いいねのモーダルを閉じる（close）
+                        self.get_element.clickElement(value=self.const_element['value_'])
+
+                        #TODO 次へのボタンを押下
+                        self.get_element.clickElement(value=self.const_element['value_'])
+
+                        #TODO 日付チェックOKフローの実行→取得したデータをGSSに書き込む
+
+                        #TODO 書き込みエラーのフラグを立てる
+
+                    #TODO 日付チェックNGフローの実行
+                    else:
+                        self.logger.debug(f"日付チェック対象外の日付: {post_date}")
+                        if not pin_count <= count:
+                            self.logger.debug(f"ピン留め投稿分スキップします: {count}")
+                            count += 1
+                            continue
+                        else:
+                            self.logger.debug(f"日付が指定以前の投稿になったため、ループを終了します: {post_date}")
+                            break
+
+
+
+
+
+                # 対象のタブを閉じる
+                self.chrome.close()
+                self.logger.debug(f"タブを閉じました: {target_user_url}")
+
 
             # コメントされている人のユーザー名を取得
 

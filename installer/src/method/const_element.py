@@ -32,26 +32,18 @@ class GssInfo(Enum):
         "": "",
 
         # column名
-        "URL": "URL",
         "CHECK": "チェック",
         "NAME": "ユーザー名",
-        "ID": "ID",
-        "PASSWORD": "Password",
         "TARGET_USER_URL": "アカウントURL",
+        "TARGET_WORKSHEET_URL": "出力先",
+        "TARGET_WORKSHEET_NAME": "worksheet名",
+
+
         "START_DAYTIME": "取得開始日時",
         "END_DAYTIME": "取得終了日時",
         "RUNNING_DATE": "実施日時",
         "WRITE_ERROR": "エラー",
 
-        "POST_COMPLETE_DATE": "最新実施日時",
-        "ERROR_DATETIME": "エラー日時",
-        "ERROR_COMMENT": "エラー理由",
-
-        # 選択する
-        "CHOICE_COL": ["LINE友だちID", "LINE登録名"],
-        "LINE_FRIEND_ID": "LINE友だちID",
-        "LINE_NAME": "LINE登録名",
-        "SIGN_UP_DATE": "登録日",
 
         "DRIVE_PARENTS_URL": "https://drive.google.com/drive/folders/17m3IFY35w-QWcwn39cM8BEAk7qWQwVts",
     }
@@ -184,21 +176,10 @@ class PostAnalysisElement(Enum):
 # ----------------------------------------------------------------------------------
 
 
-class StoriesAnalysisElement(Enum):
+class CommentFlowElement(Enum):
     INSTA = {
-        "ZIP_FILE_HEAD_NAME": "Instagramマイアカウント ストーリーズ分析",
-        "ZIP_EXTENSION": ".zip",
-        "CSV_FILE_HEAD_NAME": "ストーリーズ投稿一覧",
-        "CSV_EXTENSION": ".csv",
-        "DOWNLOAD_DIR_NAME": "downloads",
-        "UPLOAD_DIR_NAME": "uploads_to_google_drive",
-
-        "ANALYSIS_BY": "",
-        "ANALYSIS_VOL": "//a[contains(text(), 'ストーリーズ分析')]",
-        "BULK_DOWNLOAD_BTN_BY": "",
-        "BULK_DOWNLOAD_BTN_VOL": "//button[.//span[contains(text(), '一括DL')]]",
-        "": "",
-        "": "",
+        "GSS_COLUMN_NAME": "コメント or いいね",
+        "INPUT_WORD_COMMENT": "コメント",
     }
 
 
