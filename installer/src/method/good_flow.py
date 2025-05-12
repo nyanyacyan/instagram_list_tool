@@ -50,7 +50,7 @@ deco = Decorators()
 # 一連の流れ
 
 
-class GetUserToInsta:
+class GoodFlow:
     def __init__(self, chrome: WebDriver):
         # logger
         self.getLogger = Logger()
@@ -172,7 +172,7 @@ class GetUserToInsta:
                 break
 
         # スクロールが完了したら、全てのユーザー名を返す
-        self.logger.debug(f"最終的に取得したユーザー名: {all_usernames} 合計: {len(set(all_usernames))}件")
+        self.logger.debug(f"いいねユーザー名: {all_usernames} 合計: {len(set(all_usernames))}件")
         self.logger.debug(f"すべてのユーザーURL: {all_user_url} 合計: {len(all_user_url)}")
         return all_usernames, all_user_url
 
@@ -203,7 +203,7 @@ class GetUserToInsta:
                 None_row_num += 1
                 self.logger.debug(f"次の書込データの行数: {None_row_num}")
 
-            self.logger.info(f"コメントユーザーをスプシに書込完了（全{len(filtered_write_data)}行）")
+            self.logger.info(f"いいねユーザーをスプシに書込完了（全{len(filtered_write_data)}行）")
             return filtered_write_data
 
         except Exception as e:

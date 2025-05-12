@@ -42,6 +42,7 @@ from method.const_element import ( GssInfo, LoginInfo, ErrCommentInfo, PopUpComm
 # flow
 from installer.src.method.good_flow import GetUserToInsta
 from method.comment_flow import CommentFlow
+from method.good_flow import GoodFlow
 
 deco = Decorators()
 
@@ -74,6 +75,7 @@ class SingleProcess:
         self.get_gss_df_flow = GetGssDfFlow()
         self.get_user_data = GetUserToInsta(chrome=self.chrome)
         self.comment_flow = CommentFlow(chrome=self.chrome)
+        self.good_flow = GoodFlow(chrome=self.chrome)
 
         # インスタンス
         self.login = SingleSiteIDLogin(chrome=self.chrome)
@@ -177,11 +179,8 @@ class SingleProcess:
                         self.comment_flow.process(target_worksheet_name=target_worksheet_name)
 
 
-                        #TODO いいねの取得→userUrlのみにする
-                        all_usernames, all_user_url = self.get_user_data.process()
-
-                        #TODO set()で重複排除
-
+                        #TODO いいねFlowの実施
+                        self.good_flow.process(target_worksheet_name=target_worksheet_name)
 
                         #TODO いいねのモーダルを閉じる（close）
                         self.get_element.clickElement(value=self.const_element['value_'])
