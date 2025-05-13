@@ -100,12 +100,13 @@ class CommentFlow:
     #! ----------------------------------------------------------------------------------
     # 書込データをスプシに書き込む
 
-    def process(self, target_worksheet_name: str):
+    def process(self, search_username: str, target_worksheet_name: str):
         try:
             # 書込データを取得
-            filtered_write_data, target_df = self._get_filtered_write_data(target_worksheet_name=target_worksheet_name)
+            filtered_write_data, target_df = self._get_filtered_write_data(search_username=search_username, target_worksheet_name=target_worksheet_name)
 
             None_row_num = len(target_df) + 1
+            self.logger.debug(f"\nユーザー名: {search_username}\nWS: {target_worksheet_name}\n書込データの行数: {None_row_num}")
 
             for data in filtered_write_data:
                 self.logger.debug(f"書込データ: {data}")
@@ -136,9 +137,9 @@ class CommentFlow:
     #! ----------------------------------------------------------------------------------
     # 既存のユーザー名を取得し、書込データをフィルタリングする
 
-    def _get_filtered_write_data(self, target_worksheet_name: str):
+    def _get_filtered_write_data(self, search_username: str, target_worksheet_name: str):
         try:
-            write_data = self._generate_write_data()
+            write_data = self._generate_write_data(search_username)
 
             existing_username_list, target_df = self._get_written_username_list(target_worksheet_name=target_worksheet_name)
 
@@ -164,6 +165,11 @@ class CommentFlow:
             target_df = self.get_gss_df_flow.process(worksheet_name=target_worksheet_name)
             self.logger.debug(f"{target_worksheet_name}の入力前df: {target_df.head()}")
 
+            # DataFrameが空か確認（空ならNoneで返す）
+            if target_df is None or target_df.empty:
+                self.logger.debug(f"{target_worksheet_name} のデータが空のため、処理をスキップします。")
+                return None, None
+
             username_series = target_df[self.const_comment['TARGET_INPUT_USERNAME']]
             self.logger.debug(f"ユーザー名のSeries: {username_series}")
 
@@ -182,7 +188,7 @@ class CommentFlow:
     # ----------------------------------------------------------------------------------
     # 各メソッドをまとめる
 
-    def _generate_write_data(self):
+    def _generate_write_data(self, search_username: str) -> List[dict]:
         try:
             # コメントユーザー要素のリストを取得
             comment_elements = self._get_comment_elements()
@@ -195,24 +201,24 @@ class CommentFlow:
                 user_url =self._get_comment_user_url(comment_element=element, element_num=i + 1)
 
                 # InstagramのユーザーURLからユーザー名を取得
-                username = self._get_comment_user_name(user_url=user_url)
+                comment_username = self._get_comment_user_name(user_url=user_url)
 
                 comment_dict_data = {
-                    "username": username,
+                    "username": comment_username,
                     "user_url": user_url,
-                    "like_or_comment": self.self.const_comment['INPUT_WORD_COMMENT'],
+                    "like_or_comment": self.const_comment['INPUT_WORD_COMMENT'],
                     "timestamp": self.timestamp,
                 }
 
                 # 重複を除外する
-                if username not in unique_checker:
-                    unique_checker.add(username)
+                if comment_username not in unique_checker:
+                    unique_checker.add(comment_username)
 
                     # コメントデータをリストに追加
                     write_data.append(comment_dict_data)
                 else:
                     # 重複している場合は、スキップする
-                    self.logger.debug(f"重複ユーザー名: {username} はスキップされました。")
+                    self.logger.debug(f"重複ユーザー名: {comment_username} はスキップされました。")
 
             self.logger.debug(f"書込データ: {write_data}")
             return write_data
@@ -225,6 +231,7 @@ class CommentFlow:
 
     # ----------------------------------------------------------------------------------
     # コメントユーザー要素のリストを取得する
+    #TODO 正しく取得できてない
 
     def _get_comment_elements(self):
         # コメント要素を取得

@@ -84,7 +84,34 @@ class GetGssDfFlow:
 
 
     # ----------------------------------------------------------------------------------
+    # 各メソッドをまとめる チェックのある項目だけを抽出
 
+    def no_filter_process(self, worksheet_name: str):
+        try:
+            # スプシにアクセス（Worksheet指定）
+            df = self.gss_read._get_df_gss_url(worksheet_name=worksheet_name, json_key_name=self.const_gss_info['JSON_KEY_NAME'], sheet_url=self.const_gss_info['SHEET_URL'])
+
+            # 空の場合の処理
+            if df.empty:
+                self.logger.error("スプレッドシートが初期状態です")
+                return None
+
+            self.logger.debug(f'DataFrame: {df.head()}')
+
+            # 上記URLからWorksheetを取得
+            existing_titles = self.gss_read._get_all_worksheet(gss_info=self.const_gss_info)
+            self.logger.debug(f'既存Worksheet一覧: {existing_titles}')
+
+            return df
+
+        except Exception as e:
+            process_error_comment = ( f"{self.__class__.__name__} 処理中にエラーが発生 {e}" )
+            self.logger.error(process_error_comment)
+            self.chrome.quit()
+            self.popup.popupCommentOnly( popupTitle=self.const_err_cmt_dict["POPUP_TITLE_SHEET_INPUT_ERR"], comment=self.const_err_cmt_dict["POPUP_TITLE_SHEET_CHECK"], )
+
+
+    # ----------------------------------------------------------------------------------
 
     def get_account_process(self, worksheet_name: str):
         try:

@@ -37,8 +37,8 @@ class GssCheckerErrWrite:
 
         # const 明確化
         self.const_col_name = self.const_gss_info["NAME"]
-        self.const_col_id = self.const_gss_info["ID"]
-        self.const_col_password = self.const_gss_info["PASSWORD"]
+        self.const_col_id = self.const_gss_info["ACCOUNT_ID"]
+        self.const_col_password = self.const_gss_info["ACCOUNT_PASS"]
         self.const_col_post_complete_date = self.const_gss_info["POST_COMPLETE_DATE"]
         self.const_col_error_datetime = self.const_gss_info["ERROR_DATETIME"]
         self.const_col_error_comment = self.const_gss_info["ERROR_COMMENT"]

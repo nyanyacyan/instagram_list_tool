@@ -28,6 +28,9 @@ class GssInfo(Enum):
         # account
         "ACCOUNT_ID": "ID",
         "ACCOUNT_PASS": "Pass",
+        "POST_COMPLETE_DATE": "最新実施日時",
+        "ERROR_DATETIME": "エラー日時",
+        "ERROR_COMMENT": "エラー理由",
 
 
         # column名
@@ -36,7 +39,7 @@ class GssInfo(Enum):
         "NAME": "ユーザー名",
         "TARGET_USER_URL": "アカウントURL",
         "TARGET_WORKSHEET_URL": "出力先",
-        "TARGET_WORKSHEET_NAME": "worksheet名",
+        "TARGET_COLUMN_WORKSHEET_NAME": "worksheet名",
 
         # target_worksheetのcolumn名
         "TARGET_INPUT_USERNAME": "ユーザー名",
@@ -106,8 +109,8 @@ class ErrCommentInfo(Enum):
 
 class PopUpComment(Enum):
     INSTA = {
-        "": "",
-        "": "",
+        "POPUP_COMPLETE_TITLE": "処理完了",
+        "POPUP_COMPLETE_MSG": "正常に処理が完了しました。",
         "": "",
     }
 
@@ -161,8 +164,8 @@ class Element(Enum):
         "value_9": '//div[@role="dialog"]//div[contains(@style, "overflow")]',
         "value_10": './/a[starts-with(@href, "/") and string-length(@href) > 1]',
         "value_11": './/a[starts-with(@href, "/") and string-length(@href) > 1]',
-        "": "",
-        "": "",
+        "value_12": '//button[.//svg[@aria-label="閉じる"]]',
+        "value_13": '//button[.//svg[@aria-label="次へ"]]',
         "": "",
         "": "",
         "": "",

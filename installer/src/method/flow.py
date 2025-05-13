@@ -124,7 +124,10 @@ class SingleProcess:
                 running_date = row_dict[self.const_gss_info["RUNNING_DATE"]]
                 write_error = row_dict[self.const_gss_info["WRITE_ERROR"]]
                 target_worksheet_url = row_dict[self.const_gss_info["TARGET_WORKSHEET_URL"]]
-                target_worksheet_name = row_dict[self.const_gss_info["TARGET_WORKSHEET_NAME"]]
+                target_worksheet_name = row_dict[self.const_gss_info["TARGET_COLUMN_WORKSHEET_NAME"]]
+
+                # アナウンス
+                self.logger.info(f"【{index + 1}つ目】の実行  URL: {target_user_url}")
 
                 # それぞれ書き出すセルアドレスを取得
                 gss_date_cell = self.select_cell.get_cell_address(gss_row_dict=row_dict, col_name=self.const_gss_info["RUNNING_DATE"], row_num=row_num)
@@ -142,9 +145,14 @@ class SingleProcess:
                 # 新しいタブを開いてURLにアクセス
                 self.get_element._open_new_page(url=target_user_url)
                 self.random_sleep._random_sleep(2, 5)
+                #TODO ここに要素が出てから出ないとダメかも
 
                 # ピン留めされた投稿数を取得
                 pin_element = self.get_element.getElements(by=self.const_element['by_2'], value=self.const_element['value_2'])
+                if not pin_element:
+                    self.logger.debug(f"ピン留めされた投稿はありません")
+                    pin_count = 0
+
                 pin_count = len(pin_element)
                 self.logger.debug(f"ピン留めされた投稿要素: {pin_element}")
                 self.logger.debug(f"【{index + 1}つ目】ピン留めされた投稿数: {pin_count}つ")
@@ -154,8 +162,7 @@ class SingleProcess:
                 self.random_sleep._random_sleep(2, 5)
 
                 count = 1
-
-                #TODO pin_count分は除外
+                # pin_count分は除外
                 while True:
                     # 日付を取得する
                     post_date_str = self.get_element._get_attribute_to_element(by=self.const_element['by_4'], value=self.const_element['value_4'], attribute_value='datetime')
@@ -166,7 +173,6 @@ class SingleProcess:
                     post_date = datetime.strptime(post_date_str, "%Y-%m-%dT%H:%M:%S.%fZ")
                     self.logger.debug(f"修正した取得した投稿日時の型: {type(post_date)}")
 
-
                     # start_daytimeとend_daytimeの差分（取得したい日付リスト生成）→日付データをdatetime型に変換
                     replace_start_date = self.date_manager._replace_date(date_str=start_daytime)
                     self.logger.debug(f"取得した投稿日時: {type(post_date)} {post_date}, {type(replace_start_date)} {replace_start_date}")
@@ -176,25 +182,31 @@ class SingleProcess:
                         self.logger.debug(f"日付チェックOK: {post_date}")
 
                         #* コメントFlowの実施
-                        self.comment_flow.process(target_worksheet_name=target_worksheet_name)
+                        self.comment_flow.process(search_username=target_user_url, target_worksheet_name=target_worksheet_name)
 
                         #* いいねFlowの実施
                         self.good_flow.process(target_worksheet_name=target_worksheet_name)
 
-                        #TODO いいねのモーダルを閉じる（close）
-                        self.get_element.clickElement(value=self.const_element['value_'])
+                        # いいねのモーダルを閉じる（close）
+                        self.get_element.clickElement(value=self.const_element['value_12'])
 
-                        #TODO 次へのボタンを押下
-                        self.get_element.clickElement(value=self.const_element['value_'])
+                        # 次へのボタンを押下
+                        self.get_element.clickElement(value=self.const_element['value_13'])
 
-                        #TODO 日付チェックOKフローの実行→取得したデータをGSSに書き込む
+                        # カウントがピン留めされている数よりも少ない場合には追加する
+                        if count <= pin_count:
+                            self.logger.debug(f"ピン留め投稿分: {count}")
+                            count += 1
+                            continue
+                        else:
+                            self.logger.debug(f"ピン留め分のスキップは上限に達しています: {count}")
+                            continue
 
-                        #TODO 書き込みエラーのフラグを立てる
 
-                    #TODO 日付チェックNGフローの実行
+                    # 日付チェックNGフローの実行
                     else:
                         self.logger.debug(f"日付チェック対象外の日付: {post_date}")
-                        if not pin_count <= count:
+                        if count <= pin_count:
                             self.logger.debug(f"ピン留め投稿分スキップします: {count}")
                             count += 1
                             continue
@@ -202,18 +214,14 @@ class SingleProcess:
                             self.logger.debug(f"日付が指定以前の投稿になったため、ループを終了します: {post_date}")
                             break
 
-
-
-
+                # 投稿完了→スプシに日付の書込
+                self.gss_write.write_data_by_url(gss_info=self.const_gss_info, cell=gss_date_cell, input_data=self.timestamp)
 
                 # 対象のタブを閉じる
                 self.chrome.close()
                 self.logger.debug(f"タブを閉じました: {target_user_url}")
+                self.logger.warning(f"【{index + 1}つ目】処理完了  URL: {target_user_url}")
 
-
-            # コメントされている人のユーザー名を取得
-
-            #TODO 処理が完了したことをPOPUPで表示
 
         except TimeoutError:
             timeout_comment = "タイムエラー：ログインに失敗している可能性があります。"
@@ -231,14 +239,15 @@ class SingleProcess:
 
             # エラータイムスタンプ
             self.logger.debug(f"self.timestamp: {self.timestamp}")
-            self.gss_write.write_data_by_url( gss_info=gss_info, cell=err_datetime_cell, input_data=self.timestamp_two )
+            self.gss_write.write_data_by_url( gss_info=self.const_gss_info, cell=gss_date_cell, input_data=self.timestamp_two )
 
             # エラーコメント
-            self.gss_write.write_data_by_url( gss_info=gss_info, cell=err_cmt_cell, input_data=process_error_comment )
+            self.gss_write.write_data_by_url( gss_info=self.const_gss_info, cell=gss_err_cell, input_data=process_error_comment )
 
         finally:
             # ✅ Chrome を終了
             self.chrome.quit()
+            self.popup.popupCommentOnly( popupTitle=self.popup_cmt["POPUP_COMPLETE_TITLE"], comment=self.popup_cmt["POPUP_COMPLETE_MSG"], )
 
     # ----------------------------------------------------------------------------------
 
