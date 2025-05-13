@@ -148,7 +148,7 @@ class Element(Enum):
 
         # いいねボタン
         "by_5": "xpath",
-        "value_5": '//span[contains(text(), "いいね！")]',
+        "value_5": "//a[contains(@href, '/liked_by/') and @role='link']",
 
         # いいねのuserリストの取得
         "value_6": '//div[@role="dialog"]//div[contains(@style, "overflow")]',
@@ -158,7 +158,7 @@ class Element(Enum):
         "value_7": '//button//*[name()="svg"][@aria-label="次へ"]',
 
         # コメントユーザー要素
-        "value_8": '//a[@role="link" and normalize-space(text()) != ""]',
+        "value_8": '//h3/ancestor::div[1]//ul',
 
         # いいねのmodal要素
         "value_9": '//div[@role="dialog"]//div[contains(@style, "overflow")]',

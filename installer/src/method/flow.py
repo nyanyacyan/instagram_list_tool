@@ -179,7 +179,7 @@ class SingleProcess:
 
                     # 日付突合
                     if replace_start_date <= post_date:
-                        self.logger.debug(f"日付チェックOK: {post_date}")
+                        self.logger.info(f"日付チェックOK: {post_date}")
 
                         #* コメントFlowの実施
                         self.comment_flow.process(search_username=target_user_url, target_worksheet_name=target_worksheet_name)

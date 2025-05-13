@@ -105,6 +105,9 @@ class CommentFlow:
             # 書込データを取得
             filtered_write_data, target_df = self._get_filtered_write_data(search_username=search_username, target_worksheet_name=target_worksheet_name)
 
+            if not filtered_write_data:
+                return
+
             None_row_num = len(target_df) + 1
             self.logger.debug(f"\nユーザー名: {search_username}\nWS: {target_worksheet_name}\n書込データの行数: {None_row_num}")
 
@@ -126,7 +129,7 @@ class CommentFlow:
                 self.logger.debug(f"次の書込データの行数: {None_row_num}")
 
             self.logger.info(f"コメントユーザーをスプシに書込完了（全{len(filtered_write_data)}行）")
-            return filtered_write_data
+            return
 
         except Exception as e:
             process_error_comment = ( f"{self.__class__.__name__} 処理中にエラーが発生 {e}" )
@@ -140,6 +143,9 @@ class CommentFlow:
     def _get_filtered_write_data(self, search_username: str, target_worksheet_name: str):
         try:
             write_data = self._generate_write_data(search_username)
+
+            if not write_data:
+                return [], None
 
             existing_username_list, target_df = self._get_written_username_list(target_worksheet_name=target_worksheet_name)
 
@@ -193,6 +199,9 @@ class CommentFlow:
             # コメントユーザー要素のリストを取得
             comment_elements = self._get_comment_elements()
 
+            if not comment_elements:
+                return []
+
             # 重複を除外する
             unique_checker = set()
             write_data = []
@@ -234,9 +243,19 @@ class CommentFlow:
     #TODO 正しく取得できてない
 
     def _get_comment_elements(self):
-        # コメント要素を取得
-        comment_elements = self.get_element.getElements(value=self.const_element['value_8'])
-        self.logger.debug(f"コメントユーザー要素の数: {len(comment_elements)}\n{comment_elements}")
+        try:
+            # コメント要素を取得
+            comment_elements = self.get_element.getElements(value=self.const_element['value_8'])
+
+            if not comment_elements:
+                self.logger.warning("コメント要素が見つかりませんでした。")
+                return []
+
+            self.logger.debug(f"コメントユーザー要素の数: {len(comment_elements)}\n{comment_elements}")
+
+        except Exception as e:
+            process_error_comment = ( f"{self.__class__.__name__} コメントがありません {e}" )
+            self.logger.warning(process_error_comment)
 
         return comment_elements
 

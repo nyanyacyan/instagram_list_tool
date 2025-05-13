@@ -41,7 +41,7 @@ from method.base.selenium.google_drive_upload import GoogleDriveUpload
 from method.get_gss_df_flow import GetGssDfFlow
 
 # const
-from method.const_element import GssInfo, LoginInfo, ErrCommentInfo, PopUpComment, Element
+from method.const_element import GssInfo, LoginInfo, ErrCommentInfo, PopUpComment, Element, CommentFlowElement
 
 deco = Decorators()
 
@@ -77,6 +77,7 @@ class GoodFlow:
         self.const_err_cmt_dict = ErrCommentInfo.INSTA.value
         self.popup_cmt = PopUpComment.INSTA.value
         self.const_element = Element.INSTA.value
+        self.const_comment = CommentFlowElement.INSTA.value
 
         self.login = SingleSiteIDLogin(chrome=chrome)
         self.random_sleep = SeleniumBasicOperations(chrome=chrome)
@@ -101,6 +102,7 @@ class GoodFlow:
         try:
             # いいねをクリック
             self.get_element.clickElement(by=self.const_element['by_5'], value=self.const_element['value_5'])
+            self.random_sleep._random_sleep(2, 5)
 
             # いいねのリストを取得
             modal_element = self.get_element.getElement(value=self.const_element['value_6'])
@@ -113,14 +115,16 @@ class GoodFlow:
         except Exception as e:
             process_error_comment = ( f"{self.__class__.__name__} 処理中にエラーが発生 {e}" )
             self.logger.error(process_error_comment)
-            self.chrome.quit()
-            self.popup.popupCommentOnly( popupTitle=self.const_err_cmt_dict["POPUP_TITLE_SHEET_INPUT_ERR"], comment=self.const_err_cmt_dict["POPUP_TITLE_SHEET_CHECK"], )
 
     #! ----------------------------------------------------------------------------------
     # 書込データをスプシに書き込む
 
     def process(self, target_worksheet_name: str):
         try:
+            # いいねをクリック
+            self.get_element.clickElement(by=self.const_element['by_5'], value=self.const_element['value_5'])
+            self.random_sleep._random_sleep(2, 5)
+
             # 書込データを取得
             filtered_write_data, target_df = self._get_filtered_write_data(target_worksheet_name=target_worksheet_name)
 
@@ -149,14 +153,13 @@ class GoodFlow:
         except Exception as e:
             process_error_comment = ( f"{self.__class__.__name__} 処理中にエラーが発生 {e}" )
             self.logger.error(process_error_comment)
-            self.chrome.quit()
-            self.popup.popupCommentOnly( popupTitle=self.const_err_cmt_dict["POPUP_TITLE_SHEET_INPUT_ERR"], comment=self.const_err_cmt_dict["POPUP_TITLE_SHEET_CHECK"], )
 
     #! ----------------------------------------------------------------------------------
     # 既存のユーザー名を取得し、書込データをフィルタリングする
 
     def _get_filtered_write_data(self, target_worksheet_name: str):
         try:
+            # 書込データを取得
             write_data = self._generate_write_data()
 
             existing_username_list, target_df = self._get_written_username_list(target_worksheet_name=target_worksheet_name)
@@ -171,9 +174,6 @@ class GoodFlow:
         except Exception as e:
             process_error_comment = ( f"{self.__class__.__name__} 処理中にエラーが発生 {e}" )
             self.logger.error(process_error_comment)
-            self.chrome.quit()
-            self.popup.popupCommentOnly( popupTitle=self.const_err_cmt_dict["POPUP_TITLE_SHEET_INPUT_ERR"], comment=self.const_err_cmt_dict["POPUP_TITLE_SHEET_CHECK"], )
-
 
     # ----------------------------------------------------------------------------------
 
@@ -183,7 +183,7 @@ class GoodFlow:
             target_df = self.get_gss_df_flow.process(worksheet_name=target_worksheet_name)
             self.logger.debug(f"{target_worksheet_name}の入力前df: {target_df.head()}")
 
-            username_series = target_df[self.const_comment['TARGET_INPUT_USERNAME']]
+            username_series = target_df[self.const_gss_info['TARGET_INPUT_USERNAME']]
             self.logger.debug(f"ユーザー名のSeries: {username_series}")
 
             # シリーズの値をリストに変換
@@ -206,51 +206,70 @@ class GoodFlow:
             # モーダルを取得
             modal_element = self._get_modal_element()
 
-            # いいねユーザー要素のリストを取得
-            good_elements = self._get_good_elements(modal_element=modal_element)
-
-            # 重複を除外する
             unique_checker = set()
-            write_data = []
-            for i, element in enumerate(good_elements):
-                # ユーザーURLを取得
-                user_url =self._get_good_user_url(good_element=element)
+            user_infos = []
+            scroll_step = 300
+            max_user_count = 10000  # ← ここを目的に応じて変更
 
-                # InstagramのユーザーURLからユーザー名を取得
-                username = self._get_good_user_name(user_url=user_url)
+            # 初期位置
+            scroll_position = 0
+            # スクロール対象のモーダルエリア（適宜クラス指定などで調整）
+            while len(user_infos) < max_user_count:
+                # a_tags = modal_element.find_elements(By.XPATH, './/a[starts-with(@href, "/") and string-length(@href) > 1]')
 
-                good_dict_data = {
-                    "username": username,
-                    "user_url": user_url,
-                    "like_or_comment": self.self.const_comment['INPUT_WORD_GOOD'],
-                    "timestamp": self.timestamp,
-                }
+                a_tags = self.get_element.filterElements(parentElement=modal_element, value=self.const_element['value_11'])
+                self.logger.debug(f"取得した要素数: {len(a_tags)}")
+                self.logger.debug(f"取得した要素: {a_tags}")
+                for a in a_tags:
+                    # ユーザーURLの取得
+                    user_url = self._get_good_user_url(good_element=a)
 
-                # 重複を除外する
-                if username not in unique_checker:
-                    unique_checker.add(username)
+                    # ユーザー名の取得
+                    username = self._get_good_user_name(good_user_url=user_url)
 
-                    # コメントデータをリストに追加
-                    write_data.append(good_dict_data)
-                else:
-                    # 重複している場合は、スキップする
-                    self.logger.debug(f"重複ユーザー名: {username} はスキップされました。")
+                    good_dict_data = {
+                        "username": username,
+                        "user_url": user_url,
+                        "like_or_comment": self.const_comment['INPUT_WORD_GOOD'],
+                        "timestamp": self.timestamp,
+                    }
 
-            self.logger.debug(f"書込データ: {write_data}")
-            return write_data
+                    # 重複を除外する
+                    if username not in unique_checker:
+                        unique_checker.add(username)
+                        self.logger.warning(f"ユーザー名: {username} を追加します。")
+
+                        # コメントデータをリストに追加
+                        user_infos.append(good_dict_data)
+
+                    # 10000件以上取得した場合はブレーク
+                    if len(user_infos) >= max_user_count:
+                        break
+
+                # スクロールを小刻みに行う
+                scroll_position += scroll_step
+                self.logger.debug(f"スクロール位置: {scroll_position}")
+                self.chrome.execute_script("arguments[0].scrollTop = arguments[1]", modal_element, scroll_position)
+                time.sleep(1)
+
+                # すでに全て読み込み終わっていた場合のブレーク条件
+                current_height = self.chrome.execute_script("return arguments[0].scrollHeight", modal_element)
+                if scroll_position >= current_height:
+                    break
+
+            self.logger.debug(f"いいねのユーザー要素のリスト: {user_infos}")
+            return user_infos
 
         except Exception as e:
             process_error_comment = ( f"{self.__class__.__name__} 処理中にエラーが発生 {e}" )
             self.logger.error(process_error_comment)
-            self.chrome.quit()
-            self.popup.popupCommentOnly( popupTitle=self.const_err_cmt_dict["POPUP_TITLE_SHEET_INPUT_ERR"], comment=self.const_err_cmt_dict["POPUP_TITLE_SHEET_CHECK"], )
 
     # ----------------------------------------------------------------------------------
     # コメント要素からユーザー名を取得する
 
-    def _get_good_user_url(self, good_element: WebElement, element_num: int):
+    def _get_good_user_url(self, good_element: WebElement):
         self.logger.debug(f"コメント要素: {good_element}")
-        self.logger.debug(f"コメント要素のインデックス: {element_num}")
+        # self.logger.debug(f"コメント要素のインデックス: {element_num}")
         # ユーザー名を取得
         # comment_a_tag = good_element.find_element(By.XPATH, f'//a[contains(@href, "/") and @role="link"]')
 
@@ -265,17 +284,8 @@ class GoodFlow:
     def _get_good_user_name(self, good_user_url: str):
         # URL部分を除去してユーザー名を取得
         username = good_user_url.replace("https://www.instagram.com/", "").strip("/")
-        self.logger.debug(f"ユーザー名: {username}")
+        self.logger.info(f"ユーザー名: {username}")
         return username
-
-    # ----------------------------------------------------------------------------------
-    # ユーザー要素を取得
-
-    def _get_good_elements(self, modal_element: WebElement):
-        good_elements = self.get_element.filterElements(parentElement=modal_element, value=self.const_element['value_11'])
-        self.logger.debug(f"いいねのユーザー要素のリスト: {good_elements}")
-        return good_elements
-
 
     # ----------------------------------------------------------------------------------
     # modalを取得

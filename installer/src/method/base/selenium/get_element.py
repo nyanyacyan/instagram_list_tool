@@ -129,6 +129,7 @@ class GetElement:
     # 要素を絞り込み
 
     def filterElements(self, parentElement: WebElement, value: str, by: str = "xpath"):
+        self.logger.debug(f"複数の要素を取得開始: by: {by} value: {value}")
         self.clickWait.jsPageChecker(chrome=self.chrome)
 
         if by == "id":
@@ -415,6 +416,10 @@ class GetElement:
             self.logger.debug(f"要素があるんだけどクリックができません: {element}")
             self.chrome.execute_script("arguments[0].click();", element)
             self.logger.info(f"jsにてクリック実施: {element}")
+
+        except NoSuchElementException:
+            self.logger.error(f"要素が見つかりませんでした: {value}")
+            return None
 
         self.clickWait.jsPageChecker(chrome=self.chrome)
         return element
