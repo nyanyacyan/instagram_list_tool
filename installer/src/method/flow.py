@@ -40,7 +40,7 @@ from method.base.utils.sub_date_mrg import DateManager
 from method.const_element import ( GssInfo, LoginInfo, ErrCommentInfo, PopUpComment, Element, )
 
 # flow
-from installer.src.method.good_flow import GetUserToInsta
+# from method.good_flow import GetUserToInsta
 from method.comment_flow import CommentFlow
 from method.good_flow import GoodFlow
 
@@ -73,7 +73,7 @@ class SingleProcess:
 
         # Flow
         self.get_gss_df_flow = GetGssDfFlow()
-        self.get_user_data = GetUserToInsta(chrome=self.chrome)
+        # self.get_user_data = GetUserToInsta(chrome=self.chrome)
         self.comment_flow = CommentFlow(chrome=self.chrome)
         self.good_flow = GoodFlow(chrome=self.chrome)
 

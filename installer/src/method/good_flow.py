@@ -116,67 +116,7 @@ class GoodFlow:
             self.chrome.quit()
             self.popup.popupCommentOnly( popupTitle=self.const_err_cmt_dict["POPUP_TITLE_SHEET_INPUT_ERR"], comment=self.const_err_cmt_dict["POPUP_TITLE_SHEET_CHECK"], )
 
-    # ----------------------------------------------------------------------------------
-    # スプシに書き込む
-
-    # ----------------------------------------------------------------------------------
-    # 既存ユーザーと重複確認
-
-    # ----------------------------------------------------------------------------------
-    # DataFrameにあるユーザー名を取得する
-
-    # ----------------------------------------------------------------------------------
-    # DataFrameを取得する
-
-    # ----------------------------------------------------------------------------------
-
-    def _get_usernames_from_modal(self, modal_element: WebElement, scroll_step: int =300, max_user_count: int = 10000) -> list:
-        # set()は{}にどんどん入れ込む→同じものは入れない
-        seen_users = set()
-        all_usernames = []
-        all_user_url = []
-
-        # 初期位置
-        scroll_position = 0
-        # スクロール対象のモーダルエリア（適宜クラス指定などで調整）
-        while len(all_usernames) < max_user_count:
-            # a_tags = modal_element.find_elements(By.XPATH, './/a[starts-with(@href, "/") and string-length(@href) > 1]')
-            a_tags = self.get_element.filterElement(parentElement=modal_element, value='.//a[starts-with(@href, "/") and string-length(@href) > 1]')
-
-            for a in a_tags:
-                href = a.get_attribute("href")
-                if (
-                    href and
-                    href.startswith("https://www.instagram.com/") and
-                    href not in seen_users
-                ):
-                    # 被らないようにするために追加
-                    seen_users.add(href)
-                    all_user_url.append(href)
-                    username = href.replace("https://www.instagram.com/", "").strip("/")
-                    all_usernames.append(username)
-
-                    if len(all_usernames) >= max_user_count:
-                        break
-
-            # スクロールを小刻みに行う
-            scroll_position += scroll_step
-            self.logger.debug(f"スクロール位置: {scroll_position}")
-            self.logger.debug(f"取得したユーザー名: {all_usernames} 合計: {len(set(all_usernames))}件")
-            self.chrome.execute_script("arguments[0].scrollTop = arguments[1]", modal_element, scroll_position)
-            time.sleep(1)
-
-            # すでに全て読み込み終わっていた場合のブレーク条件
-            current_height = self.chrome.execute_script("return arguments[0].scrollHeight", modal_element)
-            if scroll_position >= current_height:
-                break
-
-        # スクロールが完了したら、全てのユーザー名を返す
-        self.logger.debug(f"いいねユーザー名: {all_usernames} 合計: {len(set(all_usernames))}件")
-        self.logger.debug(f"すべてのユーザーURL: {all_user_url} 合計: {len(all_user_url)}")
-        return all_usernames, all_user_url
-
-    # ----------------------------------------------------------------------------------
+    #! ----------------------------------------------------------------------------------
     # 書込データをスプシに書き込む
 
     def process(self, target_worksheet_name: str):
