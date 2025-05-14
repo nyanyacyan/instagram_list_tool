@@ -9,40 +9,25 @@ import pandas as pd
 import time
 from datetime import datetime
 from selenium.webdriver.remote.webelement import WebElement
-from selenium.webdriver.common.by import By
 from selenium.webdriver.chrome.webdriver import WebDriver
 
 # 自作モジュール
 from method.base.utils.logger import Logger
 from method.base.spreadsheet.spreadsheetRead import GetDataGSSAPI
 from method.base.decorators.decorators import Decorators
-from method.base.utils.time_manager import TimeManager
-from method.base.selenium.google_drive_download import GoogleDriveDownload
 from method.base.spreadsheet.spreadsheetWrite import GssWrite
-from method.base.spreadsheet.select_cell import GssSelectCell
 from method.base.spreadsheet.err_checker_write import GssCheckerErrWrite
-from method.base.utils.popup import Popup
 from method.base.utils.logger import Logger
-from method.base.selenium.chrome import ChromeManager
-from method.base.selenium.loginWithId import SingleSiteIDLogin
 from method.base.selenium.seleniumBase import SeleniumBasicOperations
 from method.base.spreadsheet.spreadsheetRead import GetDataGSSAPI
 from method.base.selenium.get_element import GetElement
 from method.base.decorators.decorators import Decorators
-from method.base.utils.time_manager import TimeManager
-from method.base.selenium.google_drive_download import GoogleDriveDownload
 from method.base.spreadsheet.spreadsheetWrite import GssWrite
-from method.base.spreadsheet.select_cell import GssSelectCell
 from method.base.spreadsheet.err_checker_write import GssCheckerErrWrite
-from method.base.selenium.loginWithId import SingleSiteIDLogin
-from method.base.utils.popup import Popup
-from method.base.selenium.click_element import ClickElement
-from method.base.utils.file_move import FileMove
-from method.base.selenium.google_drive_upload import GoogleDriveUpload
 from method.get_gss_df_flow import GetGssDfFlow
 
 # const
-from method.const_element import GssInfo, LoginInfo, ErrCommentInfo, PopUpComment, Element, CommentFlowElement
+from method.const_element import GssInfo, PopUpComment, Element, CommentFlowElement
 
 deco = Decorators()
 
@@ -60,39 +45,21 @@ class GoodFlow:
         # chrome
         self.chrome = chrome
 
-        # インスタンス
-        self.time_manager = TimeManager()
-        self.gss_read = GetDataGSSAPI()
-        self.gss_write = GssWrite()
-        self.drive_download = GoogleDriveDownload()
-        self.select_cell = GssSelectCell()
-        self.gss_check_err_write = GssCheckerErrWrite()
-        self.popup = Popup()
-
-
+        # タイムスタンプ
         self.timestamp = datetime.now().strftime("%Y-%m-%d %H:%M")
 
         # const
         self.const_gss_info = GssInfo.INSTA.value
-        self.const_login_info = LoginInfo.INSTA.value
-        self.const_err_cmt_dict = ErrCommentInfo.INSTA.value
         self.popup_cmt = PopUpComment.INSTA.value
         self.const_element = Element.INSTA.value
         self.const_comment = CommentFlowElement.INSTA.value
 
-        self.login = SingleSiteIDLogin(chrome=chrome)
+        # インスタンス
         self.random_sleep = SeleniumBasicOperations(chrome=chrome)
         self.get_element = GetElement(chrome=chrome)
-        self.selenium = SeleniumBasicOperations(chrome=chrome)
         self.gss_read = GetDataGSSAPI()
         self.gss_write = GssWrite()
-        self.drive_download = GoogleDriveDownload()
-        self.drive_upload = GoogleDriveUpload()
-        self.select_cell = GssSelectCell()
         self.gss_check_err_write = GssCheckerErrWrite()
-        self.popup = Popup()
-        self.click_element = ClickElement(chrome=chrome)
-        self.file_move = FileMove()
         self.get_gss_df_flow = GetGssDfFlow()
 
     ####################################################################################
@@ -168,11 +135,7 @@ class GoodFlow:
                 self.logger.warning("スプレッドシートが初期状態です")
                 return write_data, None
 
-            # フィルターリングの実施
-            # filtered_write_data = [
-            #     data for data in write_data if data['username'] not in existing_username_list
-            # ]
-
+            # 既に書込済みのユーザー名を除外する
             filtered_write_data = []
             for data in write_data:
                 # ユーザー名が既存のユーザー名リストに含まれていない場合
@@ -181,8 +144,6 @@ class GoodFlow:
                     self.logger.info(f"フィルタリング対象: {data['username']}")
                 else:
                     self.logger.warning(f"フィルタリング除外: {data['username']}")
-
-
 
             self.logger.debug(f"フィルタリング後の書込データ: {filtered_write_data}")
             return filtered_write_data, target_df
@@ -199,9 +160,9 @@ class GoodFlow:
             # 対象のWorksheetの現在のDataFrameを取得
             target_df = self.get_gss_df_flow.no_filter_process(worksheet_name=target_worksheet_name)
 
-            # 空の場合の処理
-            if target_df is None:
-                self.logger.error("スプレッドシートが初期状態です")
+            # DataFrameが空か確認（空ならNoneで返す）
+            if target_df is None or target_df.empty:
+                self.logger.debug(f"{target_worksheet_name} のデータが空のため、処理をスキップします。")
                 return None, None
 
             self.logger.debug(f"{target_worksheet_name}の入力前df: {target_df.head()}")
@@ -260,9 +221,12 @@ class GoodFlow:
                     if username not in unique_checker:
                         unique_checker.add(username)
                         self.logger.warning(f"ユーザー名: {username} を追加します。")
+                        user_infos.append(good_dict_data)
+                    else:
+                        # 既に存在する場合はスキップ
+                        self.logger.warning(f"ユーザー名: {username} は既に存在するため、スキップします。")
 
                         # コメントデータをリストに追加
-                        user_infos.append(good_dict_data)
 
                     # 10000件以上取得した場合はブレーク
                     if len(user_infos) >= max_user_count:

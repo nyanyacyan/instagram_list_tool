@@ -5,44 +5,26 @@
 
 # $$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
 # import
+import pandas as pd
 from typing import List
-import time
 from datetime import datetime
-from selenium.webdriver.remote.webelement import WebElement
-from selenium.webdriver.common.by import By
 from selenium.webdriver.chrome.webdriver import WebDriver
 
 # 自作モジュール
 from method.base.utils.logger import Logger
-from method.base.spreadsheet.spreadsheetRead import GetDataGSSAPI
 from method.base.decorators.decorators import Decorators
-from method.base.utils.time_manager import TimeManager
-from method.base.selenium.google_drive_download import GoogleDriveDownload
 from method.base.spreadsheet.spreadsheetWrite import GssWrite
-from method.base.spreadsheet.select_cell import GssSelectCell
 from method.base.spreadsheet.err_checker_write import GssCheckerErrWrite
-from method.base.utils.popup import Popup
 from method.base.utils.logger import Logger
-from method.base.selenium.chrome import ChromeManager
-from method.base.selenium.loginWithId import SingleSiteIDLogin
 from method.base.selenium.seleniumBase import SeleniumBasicOperations
-from method.base.spreadsheet.spreadsheetRead import GetDataGSSAPI
 from method.base.selenium.get_element import GetElement
 from method.base.decorators.decorators import Decorators
-from method.base.utils.time_manager import TimeManager
-from method.base.selenium.google_drive_download import GoogleDriveDownload
 from method.base.spreadsheet.spreadsheetWrite import GssWrite
-from method.base.spreadsheet.select_cell import GssSelectCell
 from method.base.spreadsheet.err_checker_write import GssCheckerErrWrite
-from method.base.selenium.loginWithId import SingleSiteIDLogin
-from method.base.utils.popup import Popup
-from method.base.selenium.click_element import ClickElement
-from method.base.utils.file_move import FileMove
-from method.base.selenium.google_drive_upload import GoogleDriveUpload
 from method.get_gss_df_flow import GetGssDfFlow
 
 # const
-from method.const_element import GssInfo, LoginInfo, ErrCommentInfo, PopUpComment, Element, CommentFlowElement
+from method.const_element import GssInfo, PopUpComment, Element, CommentFlowElement
 
 deco = Decorators()
 
@@ -60,99 +42,100 @@ class CommentFlow:
         # chrome
         self.chrome = chrome
 
-        # インスタンス
-        self.time_manager = TimeManager()
-        self.gss_read = GetDataGSSAPI()
-        self.gss_write = GssWrite()
-        self.drive_download = GoogleDriveDownload()
-        self.select_cell = GssSelectCell()
-        self.gss_check_err_write = GssCheckerErrWrite()
-        self.popup = Popup()
-
-
+        # タイムスタンプ
         self.timestamp = datetime.now().strftime("%Y-%m-%d %H:%M")
 
         # const
         self.const_gss_info = GssInfo.INSTA.value
-        self.const_login_info = LoginInfo.INSTA.value
-        self.const_err_cmt_dict = ErrCommentInfo.INSTA.value
         self.popup_cmt = PopUpComment.INSTA.value
         self.const_element = Element.INSTA.value
         self.const_comment = CommentFlowElement.INSTA.value
 
-
-        self.login = SingleSiteIDLogin(chrome=chrome)
+        # インスタンス
         self.random_sleep = SeleniumBasicOperations(chrome=chrome)
         self.get_element = GetElement(chrome=chrome)
-        self.selenium = SeleniumBasicOperations(chrome=chrome)
-        self.gss_read = GetDataGSSAPI()
         self.gss_write = GssWrite()
-        self.drive_download = GoogleDriveDownload()
-        self.drive_upload = GoogleDriveUpload()
-        self.select_cell = GssSelectCell()
         self.gss_check_err_write = GssCheckerErrWrite()
-        self.popup = Popup()
-        self.click_element = ClickElement(chrome=chrome)
-        self.file_move = FileMove()
         self.get_gss_df_flow = GetGssDfFlow()
 
     ####################################################################################
     #! ----------------------------------------------------------------------------------
     # 書込データをスプシに書き込む
 
-    def process(self, search_username: str, target_worksheet_name: str):
+    def process(self, target_worksheet_name: str):
         try:
             # 書込データを取得
-            filtered_write_data, target_df = self._get_filtered_write_data(search_username=search_username, target_worksheet_name=target_worksheet_name)
+            filtered_write_data, target_df = self._get_filtered_write_data(target_worksheet_name=target_worksheet_name)
 
-            if not filtered_write_data:
-                return
+            # 書込データをDataFrameに変換
+            filtered_write_data = pd.DataFrame(filtered_write_data)
+            self.logger.debug(f"書込データ: {filtered_write_data}")
 
-            None_row_num = len(target_df) + 1
-            self.logger.debug(f"\nユーザー名: {search_username}\nWS: {target_worksheet_name}\n書込データの行数: {None_row_num}")
+            # 書込データが空の場合
+            if filtered_write_data.empty:
+                self.logger.error("コメントの書込データが空です")
+                return None
 
-            for data in filtered_write_data:
-                self.logger.debug(f"書込データ: {data}")
+            # target_dfがある場合
+            if target_df is None or target_df.empty:
+                # もしtarget_dfがない場合
+                self.logger.warning(f"既存データなし")
+                None_row_num = 2
+            else:
+                self.logger.debug(f"既存データあり: {len(target_df)}")
+                row_num = len(target_df)
+                self.logger.debug(f"書込データの行数: {row_num}")
+                None_row_num = row_num + 2
 
-                # 辞書データをリストに変換
-                write_data_list = list(data.values())
-                self.logger.debug(f"書込データリスト: {write_data_list}")
+            end_row_num = None_row_num + len(filtered_write_data) + 1
+            self.logger.debug(f"書込データの行数: {len(filtered_write_data)}")
+            self.logger.debug(f"書込データの行数: {None_row_num} 行目から {end_row_num} 行目に書き込みます。")
 
-                cell = f"A{None_row_num}"
-                self.logger.debug(f"書込データ: {data} を {target_worksheet_name} の {cell} 行目に書き込みます。")
+            cell = f"A{None_row_num}:D{end_row_num}"
+            self.logger.debug(f"書込データのセル: {cell}")
+            self.logger.debug(f"書込データ: {target_worksheet_name} の {cell} 行目に書き込みます。")
 
-                # 書込データのインデックスを取得
-                self.gss_write.write_data_by_url( gss_info=self.const_gss_info, cell=cell, input_data=write_data_list )
-                self.logger.debug(f"書込データ: {data} を {target_worksheet_name} の {cell} 行目に書き込みました。")
+            # 書込データのDataFrameをGSSへ書き込むためにリスト型に変換
+            gss_write_list = filtered_write_data.values.tolist()
+            self.logger.debug(f"書込データリスト: {gss_write_list}")
 
-                None_row_num += 1
-                self.logger.debug(f"次の書込データの行数: {None_row_num}")
+            # GSSへ書込
+            self.gss_write.write_input_worksheet( gss_info=self.const_gss_info, worksheet_name=target_worksheet_name, cell=cell, input_data=gss_write_list )
+            self.logger.debug(f"書込データ: {target_worksheet_name} の {cell} 行目に書き込みました。")
 
             self.logger.info(f"コメントユーザーをスプシに書込完了（全{len(filtered_write_data)}行）")
-            return
+            return filtered_write_data
 
         except Exception as e:
             process_error_comment = ( f"{self.__class__.__name__} 処理中にエラーが発生 {e}" )
             self.logger.error(process_error_comment)
-            self.chrome.quit()
-            self.popup.popupCommentOnly( popupTitle=self.const_err_cmt_dict["POPUP_TITLE_SHEET_INPUT_ERR"], comment=self.const_err_cmt_dict["POPUP_TITLE_SHEET_CHECK"], )
 
     #! ----------------------------------------------------------------------------------
     # 既存のユーザー名を取得し、書込データをフィルタリングする
 
-    def _get_filtered_write_data(self, search_username: str, target_worksheet_name: str):
+    def _get_filtered_write_data(self, target_worksheet_name: str):
         try:
-            write_data = self._generate_write_data(search_username)
+            # 書込データを生成
+            write_data = self._generate_write_data()
 
-            # 書込データがなかった場合にはNoneを返す
-            if not write_data:
-                return [], None
-
+            # 既存のユーザー名リストを取得
             existing_username_list, target_df = self._get_written_username_list(target_worksheet_name=target_worksheet_name)
+            self.logger.debug(f"既存のユーザー名リスト: {existing_username_list}")
 
-            filtered_write_data = [
-                data for data in write_data if data['username'] not in existing_username_list
-            ]
+            # 空の場合の処理
+            if existing_username_list is None:
+                self.logger.warning("スプレッドシートが初期状態です")
+                return write_data, None
+
+            # 既に書込済みのユーザー名を除外する
+            filtered_write_data = []
+            for data in write_data:
+                # ユーザー名が既存のユーザー名リストに含まれていない場合
+                if data['username'] not in existing_username_list:
+                    filtered_write_data.append(data)
+                    self.logger.info(f"フィルタリング対象: {data['username']}")
+                else:
+                    self.logger.warning(f"フィルタリング除外: {data['username']}")
 
             self.logger.debug(f"フィルタリング後の書込データ: {filtered_write_data}")
             return filtered_write_data, target_df
@@ -160,22 +143,20 @@ class CommentFlow:
         except Exception as e:
             process_error_comment = ( f"{self.__class__.__name__} 処理中にエラーが発生 {e}" )
             self.logger.error(process_error_comment)
-            self.chrome.quit()
-            self.popup.popupCommentOnly( popupTitle=self.const_err_cmt_dict["POPUP_TITLE_SHEET_INPUT_ERR"], comment=self.const_err_cmt_dict["POPUP_TITLE_SHEET_CHECK"], )
-
 
     # ----------------------------------------------------------------------------------
 
     def _get_written_username_list(self, target_worksheet_name: str):
         try:
             # 対象のWorksheetの現在のDataFrameを取得
-            target_df = self.get_gss_df_flow.process(worksheet_name=target_worksheet_name)
-            self.logger.debug(f"{target_worksheet_name}の入力前df: {target_df.head()}")
+            target_df = self.get_gss_df_flow.no_filter_process(worksheet_name=target_worksheet_name)
 
             # DataFrameが空か確認（空ならNoneで返す）
             if target_df is None or target_df.empty:
-                self.logger.debug(f"{target_worksheet_name} のデータが空のため、処理をスキップします。")
+                self.logger.warning(f"{target_worksheet_name} のスプシが初期状態です。")
                 return None, None
+
+            self.logger.debug(f"{target_worksheet_name}の入力前df: {target_df.head()}")
 
             username_series = target_df[self.const_comment['TARGET_INPUT_USERNAME']]
             self.logger.debug(f"ユーザー名のSeries: {username_series}")
@@ -189,30 +170,26 @@ class CommentFlow:
         except Exception as e:
             process_error_comment = ( f"{self.__class__.__name__} 処理中にエラーが発生 {e}" )
             self.logger.error(process_error_comment)
-            self.chrome.quit()
-            self.popup.popupCommentOnly( popupTitle=self.const_err_cmt_dict["POPUP_TITLE_SHEET_INPUT_ERR"], comment=self.const_err_cmt_dict["POPUP_TITLE_SHEET_CHECK"], )
 
     # ----------------------------------------------------------------------------------
     # 各メソッドをまとめる
 
-    def _generate_write_data(self, search_username: str) -> List[dict]:
+    def _generate_write_data(self) -> List[dict]:
         try:
             # コメントユーザー要素のリストを取得
-            comment_elements = self._get_comment_elements()
+            user_urls =self._get_comment_user_url()
 
-            if not comment_elements:
+            if not user_urls:
                 return []
 
             # 重複を除外する
             unique_checker = set()
             write_data = []
-            for i, element in enumerate(comment_elements):
-                # ユーザーURLを取得
-                user_url =self._get_comment_user_url(comment_element=element, element_num=i + 1)
+            for user_url in user_urls:
+                self.logger.debug(f"ユーザーURL: {user_url}")
 
-                # InstagramのユーザーURLからユーザー名を取得
+                # ユーザー名を取得
                 comment_username = self._get_comment_user_name(user_url=user_url)
-
                 comment_dict_data = {
                     "username": comment_username,
                     "user_url": user_url,
@@ -223,8 +200,7 @@ class CommentFlow:
                 # 重複を除外する
                 if comment_username not in unique_checker:
                     unique_checker.add(comment_username)
-
-                    # コメントデータをリストに追加
+                    self.logger.warning(f"ユーザー名: {comment_username} を追加します。")
                     write_data.append(comment_dict_data)
                 else:
                     # 重複している場合は、スキップする
@@ -236,14 +212,11 @@ class CommentFlow:
         except Exception as e:
             process_error_comment = ( f"{self.__class__.__name__} 処理中にエラーが発生 {e}" )
             self.logger.error(process_error_comment)
-            self.chrome.quit()
-            self.popup.popupCommentOnly( popupTitle=self.const_err_cmt_dict["POPUP_TITLE_SHEET_INPUT_ERR"], comment=self.const_err_cmt_dict["POPUP_TITLE_SHEET_CHECK"], )
 
     # ----------------------------------------------------------------------------------
-    # コメントユーザー要素のリストを取得する
-    #TODO 正しく取得できてない
+    # コメントユーザーurlを取得する
 
-    def _get_comment_elements(self):
+    def _get_comment_user_url(self):
         try:
             # self.logger.info(self.chrome.page_source)
             self.get_element.unlockDisplayNone()
@@ -264,8 +237,9 @@ class CommentFlow:
                     self.logger.debug(f"li要素: {li}")
                     self.logger.debug(f"li要素のテキスト: {li.text}")
 
+                    # 週間前、時間前、日前のいずれかが含まれていて、返信が含まれている場合
                     li_text = li.text
-                    if ("週間前" in li_text or "時間前" in li_text) and "返信" in li_text:
+                    if ("週間前" in li_text or "時間前" in li_text or "日前" in li_text) and "返信" in li_text:
                         true_li_elements.append(li)
 
                 for l in true_li_elements:
@@ -298,19 +272,6 @@ class CommentFlow:
             process_error_comment = ( f"{self.__class__.__name__} コメントがありません {e}" )
             self.logger.error(process_error_comment)
 
-
-    # ----------------------------------------------------------------------------------
-    # コメント要素からユーザー名を取得する
-
-    def _get_comment_user_url(self, comment_element: WebElement, element_num: int):
-        self.logger.debug(f"コメント要素: {comment_element}")
-        self.logger.debug(f"コメント要素のインデックス: {element_num}")
-        # ユーザー名を取得
-        comment_a_tag = comment_element.find_element(By.XPATH, f'//a[contains(@href, "/") and @role="link"]')
-        user_url = comment_a_tag.get_attribute('href')
-        self.logger.debug(f"ユーザーURL: {user_url}")
-
-        return user_url
 
     # ----------------------------------------------------------------------------------
     # InstagramのユーザーURLからユーザー名を取得する

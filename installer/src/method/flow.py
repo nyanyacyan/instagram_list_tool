@@ -184,7 +184,8 @@ class SingleProcess:
                         self.logger.info(f"日付チェックOK: {post_date}")
 
                         #* コメントFlowの実施
-                        self.comment_flow.process(search_username=target_user_url, target_worksheet_name=target_worksheet_name)
+                        self.comment_flow.process(target_worksheet_name=target_worksheet_name)
+                        self.random_sleep._random_sleep(2, 5)
 
                         #* いいねFlowの実施
                         self.good_flow.process(target_worksheet_name=target_worksheet_name)
