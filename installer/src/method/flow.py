@@ -11,6 +11,8 @@ import concurrent.futures
 from typing import Dict
 from datetime import datetime, date, timedelta
 from selenium.webdriver.common.by import By
+from selenium.webdriver.common.action_chains import ActionChains
+from selenium.webdriver.common.keys import Keys
 
 # 自作モジュール
 from method.base.utils.logger import Logger
@@ -186,12 +188,19 @@ class SingleProcess:
 
                         #* いいねFlowの実施
                         self.good_flow.process(target_worksheet_name=target_worksheet_name)
+                        self.random_sleep._random_sleep(2, 5)
+
+
 
                         # いいねのモーダルを閉じる（close）
-                        self.get_element.clickElement(value=self.const_element['value_12'])
+                        ActionChains(self.chrome).send_keys(Keys.ESCAPE).perform()
+                        self.logger.debug(f"いいねのモーダルを閉じる")
+                        self.random_sleep._random_sleep(2, 5)
 
                         # 次へのボタンを押下
-                        self.get_element.clickElement(value=self.const_element['value_13'])
+                        ActionChains(self.chrome).send_keys(Keys.ARROW_RIGHT).perform()
+                        self.logger.debug(f"次へのボタンを押下")
+                        self.random_sleep._random_sleep(2, 5)
 
                         # カウントがピン留めされている数よりも少ない場合には追加する
                         if count <= pin_count:

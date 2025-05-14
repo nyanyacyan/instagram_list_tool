@@ -164,7 +164,7 @@ class Element(Enum):
         "value_9": '//div[@role="dialog"]//div[contains(@style, "overflow")]',
         "value_10": './/a[starts-with(@href, "/") and string-length(@href) > 1]',
         "value_11": './/a[starts-with(@href, "/") and string-length(@href) > 1]',
-        "value_12": '//div[@role="button" and .//svg[@aria-label="閉じる"]]',
+        "value_12": '//button[.//svg[@aria-label="閉じる"]]',
         "value_13": '//button[.//svg[@aria-label="次へ"]]',
         "": "",
         "": "",

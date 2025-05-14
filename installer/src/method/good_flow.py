@@ -118,13 +118,15 @@ class GoodFlow:
                 return None
 
             # target_dfがある場合
-            row_num = len(target_df)
-            self.logger.debug(f"書込データの行数: {row_num}")
-            if not target_df.empty:
-                None_row_num = row_num + 2
-            else:
+            if target_df is None or target_df.empty:
                 # もしtarget_dfがない場合
+                self.logger.warning(f"既存データなし")
                 None_row_num = 2
+            else:
+                self.logger.debug(f"既存データあり: {len(target_df)}")
+                row_num = len(target_df)
+                self.logger.debug(f"書込データの行数: {row_num}")
+                None_row_num = row_num + 2
 
             end_row_num = None_row_num + len(filtered_write_data) + 1
             self.logger.debug(f"書込データの行数: {len(filtered_write_data)}")
