@@ -43,9 +43,9 @@ class GssInfo(Enum):
 
         # target_worksheetのcolumn名
         "TARGET_INPUT_USERNAME": "ユーザー名",
-        "TARGET_INPUT_USERNAME": "URL",
-        "TARGET_INPUT_USERNAME": "コメント or いいね",
-        "TARGET_INPUT_USERNAME": "追加日",
+        "TARGET_INPUT_USER_URL": "URL",
+        "TARGET_INPUT_TYPE": "コメント or いいね",
+        "TARGET_INPUT_DATE": "追加日",
 
         "START_DAYTIME": "取得開始日時",
         "END_DAYTIME": "取得終了日時",
@@ -164,7 +164,7 @@ class Element(Enum):
         "value_9": '//div[@role="dialog"]//div[contains(@style, "overflow")]',
         "value_10": './/a[starts-with(@href, "/") and string-length(@href) > 1]',
         "value_11": './/a[starts-with(@href, "/") and string-length(@href) > 1]',
-        "value_12": '//button[.//svg[@aria-label="閉じる"]]',
+        "value_12": '//div[@role="button" and .//svg[@aria-label="閉じる"]]',
         "value_13": '//button[.//svg[@aria-label="次へ"]]',
         "": "",
         "": "",

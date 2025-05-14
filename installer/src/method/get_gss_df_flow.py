@@ -93,7 +93,7 @@ class GetGssDfFlow:
 
             # 空の場合の処理
             if df.empty:
-                self.logger.error("スプレッドシートが初期状態です")
+                self.logger.warning("スプレッドシートが初期状態です")
                 return None
 
             self.logger.debug(f'DataFrame: {df.head()}')

@@ -144,6 +144,7 @@ class CommentFlow:
         try:
             write_data = self._generate_write_data(search_username)
 
+            # 書込データがなかった場合にはNoneを返す
             if not write_data:
                 return [], None
 

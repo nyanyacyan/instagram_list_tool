@@ -5,6 +5,7 @@
 
 # $$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
 # import
+import pandas as pd
 import time
 from datetime import datetime
 from selenium.webdriver.remote.webelement import WebElement
@@ -95,27 +96,6 @@ class GoodFlow:
         self.get_gss_df_flow = GetGssDfFlow()
 
     ####################################################################################
-    # ----------------------------------------------------------------------------------
-    # 各メソッドをまとめる
-
-    def process(self):
-        try:
-            # いいねをクリック
-            self.get_element.clickElement(by=self.const_element['by_5'], value=self.const_element['value_5'])
-            self.random_sleep._random_sleep(2, 5)
-
-            # いいねのリストを取得
-            modal_element = self.get_element.getElement(value=self.const_element['value_6'])
-
-            # user_urlとnameを取得
-            all_usernames, all_user_url = self._get_usernames_from_modal(modal_element=modal_element)
-
-            return all_usernames, all_user_url
-
-        except Exception as e:
-            process_error_comment = ( f"{self.__class__.__name__} 処理中にエラーが発生 {e}" )
-            self.logger.error(process_error_comment)
-
     #! ----------------------------------------------------------------------------------
     # 書込データをスプシに書き込む
 
@@ -128,24 +108,39 @@ class GoodFlow:
             # 書込データを取得
             filtered_write_data, target_df = self._get_filtered_write_data(target_worksheet_name=target_worksheet_name)
 
-            None_row_num = len(target_df) + 1
+            # 書込データをDataFrameに変換
+            filtered_write_data = pd.DataFrame(filtered_write_data)
+            self.logger.debug(f"書込データ: {filtered_write_data}")
 
-            for data in filtered_write_data:
-                self.logger.debug(f"書込データ: {data}")
+            # 書込データが空の場合
+            if filtered_write_data.empty:
+                self.logger.error("いいねの書込データが空です")
+                return None
 
-                # 辞書データをリストに変換
-                write_data_list = list(data.values())
-                self.logger.debug(f"書込データリスト: {write_data_list}")
+            # target_dfがある場合
+            row_num = len(target_df)
+            self.logger.debug(f"書込データの行数: {row_num}")
+            if not target_df.empty:
+                None_row_num = row_num + 2
+            else:
+                # もしtarget_dfがない場合
+                None_row_num = 2
 
-                cell = f"A{None_row_num}"
-                self.logger.debug(f"書込データ: {data} を {target_worksheet_name} の {cell} 行目に書き込みます。")
+            end_row_num = None_row_num + len(filtered_write_data) + 1
+            self.logger.debug(f"書込データの行数: {len(filtered_write_data)}")
+            self.logger.debug(f"書込データの行数: {None_row_num} 行目から {end_row_num} 行目に書き込みます。")
 
-                # 書込データのインデックスを取得
-                self.gss_write.write_data_by_url( gss_info=self.const_gss_info, cell=cell, input_data=write_data_list )
-                self.logger.debug(f"書込データ: {data} を {target_worksheet_name} の {cell} 行目に書き込みました。")
+            cell = f"A{None_row_num}:D{end_row_num}"
+            self.logger.debug(f"書込データのセル: {cell}")
+            self.logger.debug(f"書込データ: {target_worksheet_name} の {cell} 行目に書き込みます。")
 
-                None_row_num += 1
-                self.logger.debug(f"次の書込データの行数: {None_row_num}")
+            # 書込データのDataFrameをGSSへ書き込むためにリスト型に変換
+            gss_write_list = filtered_write_data.values.tolist()
+            self.logger.debug(f"書込データリスト: {gss_write_list}")
+
+            # GSSへ書込
+            self.gss_write.write_input_worksheet( gss_info=self.const_gss_info, worksheet_name=target_worksheet_name, cell=cell, input_data=gss_write_list )
+            self.logger.debug(f"書込データ: {target_worksheet_name} の {cell} 行目に書き込みました。")
 
             self.logger.info(f"いいねユーザーをスプシに書込完了（全{len(filtered_write_data)}行）")
             return filtered_write_data
@@ -162,11 +157,30 @@ class GoodFlow:
             # 書込データを取得
             write_data = self._generate_write_data()
 
+            # 既存のユーザー名を取得
             existing_username_list, target_df = self._get_written_username_list(target_worksheet_name=target_worksheet_name)
+            self.logger.debug(f"既存のユーザー名リスト: {existing_username_list}")
 
-            filtered_write_data = [
-                data for data in write_data if data['username'] not in existing_username_list
-            ]
+            # 空の場合の処理
+            if existing_username_list is None:
+                self.logger.warning("スプレッドシートが初期状態です")
+                return write_data, None
+
+            # フィルターリングの実施
+            # filtered_write_data = [
+            #     data for data in write_data if data['username'] not in existing_username_list
+            # ]
+
+            filtered_write_data = []
+            for data in write_data:
+                # ユーザー名が既存のユーザー名リストに含まれていない場合
+                if data['username'] not in existing_username_list:
+                    filtered_write_data.append(data)
+                    self.logger.info(f"フィルタリング対象: {data['username']}")
+                else:
+                    self.logger.warning(f"フィルタリング除外: {data['username']}")
+
+
 
             self.logger.debug(f"フィルタリング後の書込データ: {filtered_write_data}")
             return filtered_write_data, target_df
@@ -176,13 +190,21 @@ class GoodFlow:
             self.logger.error(process_error_comment)
 
     # ----------------------------------------------------------------------------------
+    # 既存のユーザー名を取得する
 
     def _get_written_username_list(self, target_worksheet_name: str):
         try:
             # 対象のWorksheetの現在のDataFrameを取得
-            target_df = self.get_gss_df_flow.process(worksheet_name=target_worksheet_name)
+            target_df = self.get_gss_df_flow.no_filter_process(worksheet_name=target_worksheet_name)
+
+            # 空の場合の処理
+            if target_df is None:
+                self.logger.error("スプレッドシートが初期状態です")
+                return None, None
+
             self.logger.debug(f"{target_worksheet_name}の入力前df: {target_df.head()}")
 
+            # ユーザー名の列を取得
             username_series = target_df[self.const_gss_info['TARGET_INPUT_USERNAME']]
             self.logger.debug(f"ユーザー名のSeries: {username_series}")
 
@@ -195,8 +217,6 @@ class GoodFlow:
         except Exception as e:
             process_error_comment = ( f"{self.__class__.__name__} 処理中にエラーが発生 {e}" )
             self.logger.error(process_error_comment)
-            self.chrome.quit()
-            self.popup.popupCommentOnly( popupTitle=self.const_err_cmt_dict["POPUP_TITLE_SHEET_INPUT_ERR"], comment=self.const_err_cmt_dict["POPUP_TITLE_SHEET_CHECK"], )
 
     # ----------------------------------------------------------------------------------
     # いいねのユーザーデータを作成する
