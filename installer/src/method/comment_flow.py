@@ -245,10 +245,50 @@ class CommentFlow:
 
     def _get_comment_elements(self):
         try:
-            # コメント要素を取得
-            comment_elements = self.get_element.getElements(value=self.const_element['value_8'])
+            # self.logger.info(self.chrome.page_source)
+            self.get_element.unlockDisplayNone()
 
-            if not comment_elements:
+            # コメント要素を取得
+            ul_elements = self.get_element.getElements(by=self.const_element['by_12'], value=self.const_element['value_12'])
+            self.logger.debug(f"ul要素の数: {len(ul_elements)}\n{ul_elements}")
+
+            user_url_list = []
+            for ul in ul_elements:
+                self.logger.debug(f"ul要素: {ul}")
+                self.logger.debug(f"ul要素のテキスト: {ul.text}")
+
+
+                true_li_elements = []
+                li_elements = self.get_element.filterElements(parentElement=ul,by=self.const_element['by_13'], value=self.const_element['value_13'])
+                for li in li_elements:
+                    self.logger.debug(f"li要素: {li}")
+                    self.logger.debug(f"li要素のテキスト: {li.text}")
+
+                    li_text = li.text
+                    if ("週間前" in li_text or "時間前" in li_text) and "返信" in li_text:
+                        true_li_elements.append(li)
+
+                for l in true_li_elements:
+                    a_elements = self.get_element.filterElements(parentElement=l,by=self.const_element['by_13'], value=self.const_element['value_15'])
+
+                    for a in a_elements:
+                        self.logger.debug(f"a要素: {a}")
+                        self.logger.debug(f"a要素のテキスト: {a.text}")
+                        user_url = a.get_attribute('href')
+                        user_url_list.append(user_url)
+                        self.logger.debug(f"ユーザーURL: {user_url}")
+
+            for user_url in user_url_list:
+                self.logger.debug(f"ユーザーURL: {user_url}")
+            self.logger.debug(f"ユーザーURLリスト: {user_url_list}")
+
+            filter_user_url = list({url for url in user_url_list if "/c/" not in url})
+
+            for user_url in filter_user_url:
+                self.logger.debug(f"ユーザーURL: {user_url}")
+            self.logger.debug(f"フィルタリング後のユーザーURLリスト: {filter_user_url} {len(filter_user_url)}件")
+
+            if not ul_elements:
                 self.logger.warning("コメント要素が見つかりませんでした。")
                 return []
 
@@ -256,9 +296,9 @@ class CommentFlow:
 
         except Exception as e:
             process_error_comment = ( f"{self.__class__.__name__} コメントがありません {e}" )
-            self.logger.warning(process_error_comment)
+            self.logger.error(process_error_comment)
 
-        return comment_elements
+        return filter_user_url
 
     # ----------------------------------------------------------------------------------
     # コメント要素からユーザー名を取得する

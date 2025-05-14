@@ -158,14 +158,20 @@ class Element(Enum):
         "value_7": '//button//*[name()="svg"][@aria-label="次へ"]',
 
         # コメントユーザー要素
-        "value_8": '//h3/ancestor::div[1]//ul',
+        "by_12": "tag",
+        "value_12": 'ul',
+        "by_13": "tag",
+        "value_13": 'li',
+        "by_14": "tag",
+        "value_14": 'h3',
+        "by_15": "tag",
+        "value_15": 'a',
+
 
         # いいねのmodal要素
         "value_9": '//div[@role="dialog"]//div[contains(@style, "overflow")]',
         "value_10": './/a[starts-with(@href, "/") and string-length(@href) > 1]',
         "value_11": './/a[starts-with(@href, "/") and string-length(@href) > 1]',
-        "value_12": '//button[.//svg[@aria-label="閉じる"]]',
-        "value_13": '//button[.//svg[@aria-label="次へ"]]',
         "": "",
         "": "",
         "": "",
