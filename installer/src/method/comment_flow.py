@@ -284,21 +284,20 @@ class CommentFlow:
 
             filter_user_url = list({url for url in user_url_list if "/c/" not in url})
 
+            if not filter_user_url:
+                self.logger.warning("フィルタリング後のユーザーURLリストが空です。")
+                return []
+
             for user_url in filter_user_url:
                 self.logger.debug(f"ユーザーURL: {user_url}")
             self.logger.debug(f"フィルタリング後のユーザーURLリスト: {filter_user_url} {len(filter_user_url)}件")
+            return filter_user_url
 
-            if not ul_elements:
-                self.logger.warning("コメント要素が見つかりませんでした。")
-                return []
-
-            self.logger.debug(f"コメントユーザー要素の数: {len(comment_elements)}\n{comment_elements}")
 
         except Exception as e:
             process_error_comment = ( f"{self.__class__.__name__} コメントがありません {e}" )
             self.logger.error(process_error_comment)
 
-        return filter_user_url
 
     # ----------------------------------------------------------------------------------
     # コメント要素からユーザー名を取得する
