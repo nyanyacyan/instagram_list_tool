@@ -158,7 +158,7 @@ class CommentFlow:
 
             self.logger.debug(f"{target_worksheet_name}の入力前df: {target_df.head()}")
 
-            username_series = target_df[self.const_comment['TARGET_INPUT_USERNAME']]
+            username_series = target_df[self.const_gss_info['TARGET_INPUT_USERNAME']]
             self.logger.debug(f"ユーザー名のSeries: {username_series}")
 
             # シリーズの値をリストに変換
@@ -204,7 +204,7 @@ class CommentFlow:
                     write_data.append(comment_dict_data)
                 else:
                     # 重複している場合は、スキップする
-                    self.logger.debug(f"重複ユーザー名: {comment_username} はスキップされました。")
+                    self.logger.debug(f"重複ユーザー名: {comment_username} は既在するため、スキップします")
 
             self.logger.debug(f"書込データ: {write_data}")
             return write_data
@@ -218,9 +218,6 @@ class CommentFlow:
 
     def _get_comment_user_url(self):
         try:
-            # self.logger.info(self.chrome.page_source)
-            self.get_element.unlockDisplayNone()
-
             # コメント要素を取得
             ul_elements = self.get_element.getElements(by=self.const_element['by_12'], value=self.const_element['value_12'])
             self.logger.debug(f"ul要素の数: {len(ul_elements)}\n{ul_elements}")
@@ -266,7 +263,6 @@ class CommentFlow:
                 self.logger.debug(f"ユーザーURL: {user_url}")
             self.logger.debug(f"フィルタリング後のユーザーURLリスト: {filter_user_url} {len(filter_user_url)}件")
             return filter_user_url
-
 
         except Exception as e:
             process_error_comment = ( f"{self.__class__.__name__} コメントがありません {e}" )

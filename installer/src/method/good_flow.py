@@ -224,7 +224,7 @@ class GoodFlow:
                         user_infos.append(good_dict_data)
                     else:
                         # 既に存在する場合はスキップ
-                        self.logger.warning(f"ユーザー名: {username} は既に存在するため、スキップします。")
+                        self.logger.debug(f"ユーザー名: {username} は既在するため、スキップします。")
 
                         # コメントデータをリストに追加
 

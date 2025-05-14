@@ -163,9 +163,11 @@ class SingleProcess:
                 self.get_element.clickElement(value=self.const_element['value_3'])
                 self.random_sleep._random_sleep(2, 5)
 
-                count = 1
+                count = 0
                 # pin_count分は除外
                 while True:
+                    self.logger.info(f"count: {count + 1} 回目 / ピン留め数: {pin_count}個: ループ処理開始")
+
                     # 日付を取得する
                     post_date_str = self.get_element._get_attribute_to_element(by=self.const_element['by_4'], value=self.const_element['value_4'], attribute_value='datetime')
                     self.logger.debug(f"投稿日時: {post_date_str}")
@@ -182,6 +184,7 @@ class SingleProcess:
                     # 日付突合
                     if replace_start_date <= post_date:
                         self.logger.info(f"日付チェックOK: {post_date}")
+                        self.random_sleep._random_sleep(2, 5)
 
                         #* コメントFlowの実施
                         self.comment_flow.process(target_worksheet_name=target_worksheet_name)
@@ -190,8 +193,6 @@ class SingleProcess:
                         #* いいねFlowの実施
                         self.good_flow.process(target_worksheet_name=target_worksheet_name)
                         self.random_sleep._random_sleep(2, 5)
-
-
 
                         # いいねのモーダルを閉じる（close）
                         ActionChains(self.chrome).send_keys(Keys.ESCAPE).perform()
@@ -207,21 +208,29 @@ class SingleProcess:
                         if count <= pin_count:
                             self.logger.debug(f"ピン留め投稿分: {count}")
                             count += 1
+                            self.logger.info(f"ピン留めの上限に達していないため再度ループに戻ります: {count}回目の実施")
                             continue
                         else:
                             self.logger.debug(f"ピン留め分のスキップは上限に達しています: {count}")
                             continue
 
 
+
                     # 日付チェックNGフローの実行
                     else:
-                        self.logger.debug(f"日付チェック対象外の日付: {post_date}")
+                        self.logger.warning(f"指定した日付以前の投稿を検知: {post_date}")
                         if count <= pin_count:
-                            self.logger.debug(f"ピン留め投稿分スキップします: {count}")
+                            self.logger.info(f"ピン留め投稿分のためスキップします: {count}")
+
+                            # 次へのボタンを押下
+                            ActionChains(self.chrome).send_keys(Keys.ARROW_RIGHT).perform()
+                            self.logger.debug(f"次へのボタンを押下")
+                            self.random_sleep._random_sleep(2, 5)
+
                             count += 1
                             continue
                         else:
-                            self.logger.debug(f"日付が指定以前の投稿になったため、ループを終了します: {post_date}")
+                            self.logger.warning(f"日付が指定以前の投稿になったため、ループを終了して次のユーザーに移ります: {post_date}")
                             break
 
                 # 投稿完了→スプシに日付の書込

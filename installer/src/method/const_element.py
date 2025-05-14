@@ -24,6 +24,7 @@ class GssInfo(Enum):
         "SHEET_URL": "https://docs.google.com/spreadsheets/d/1g7ycnDup8DYweQA7J1y7yT-ADrsvWSjw8ILQVdYcBEo/edit?gid=931453217#gid=931453217",
         "TARGET_WORKSHEET_NAME": "ターゲットリスト",
         "ACCOUNT_WORKSHEET_NAME": "アカウント",
+        "WORKSHEET_NAME": "ターゲットリスト",
 
         # account
         "ACCOUNT_ID": "ID",

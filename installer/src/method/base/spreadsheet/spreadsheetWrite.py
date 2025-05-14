@@ -55,14 +55,28 @@ class GssWrite:
                 client = self.client(jsonKeyName=gss_info["JSON_KEY_NAME"])
                 selectWorkSheet = client.open_by_url(gss_info["SHEET_URL"]).worksheet(gss_info["WORKSHEET_NAME"])
 
-                # ✅ 1次元リストなら2次元リストに変換
-                if isinstance(input_data, list):
-                    if not any(isinstance(i, list) for i in input_data):  # ネストされていなければ
-                        input_data = [input_data]
-                else:
-                    input_data = [[input_data]]  # 文字列や数値を2次元リストに変換
+                self.logger.debug(f"input_data: {input_data}")
+                self.logger.debug(f"cell: {cell}")
+                self.logger.debug(f"gss_info: {gss_info}")
+                self.logger.debug(f"selectWorkSheet: {selectWorkSheet}")
+                self.logger.debug(f"gss_info['SHEET_URL']: {gss_info['SHEET_URL']}")
+                self.logger.debug(f"gss_info['WORKSHEET_NAME']: {gss_info['WORKSHEET_NAME']}")
 
+                # 型の確認を行う
+                # Noneまたは空の場合はスキップ
+                if input_data is None or input_data == "" or (isinstance(input_data, list) and not input_data):
+                    self.logger.warning("空のデータが指定されました。書き込みをスキップします。")
+                    return None
 
+                # 日付型が含まれる場合に備えて変換
+                input_data = self._convert_datetime_to_str(input_data)
+
+                # 2次元リストに整形
+                input_data = self._ensure_2d_list(input_data)
+                self.logger.debug(f"input_data: {input_data}")
+                self.logger.debug(f"最終的なinput_dataの構造: type={type(input_data)}, sample={input_data[:2]}")
+
+                # 書き込み
                 writeData = selectWorkSheet.update(cell, input_data)
                 self.logger.info(f"{input_data}を{cell}への書き込み完了")
                 return writeData
@@ -86,13 +100,13 @@ class GssWrite:
                 client = self.client(jsonKeyName=gss_info["JSON_KEY_NAME"])
                 selectWorkSheet = client.open_by_url(gss_info["SHEET_URL"]).worksheet(worksheet_name)
 
-                # ✅ 1次元リストなら2次元リストに変換
-                if isinstance(input_data, list):
-                    if not any(isinstance(i, list) for i in input_data):  # ネストされていなければ
-                        input_data = [input_data]
-                else:
-                    input_data = [[input_data]]  # 文字列や数値を2次元リストに変換
+                # 型の確認を行う
+                input_data = [self._convert_datetime_to_str(input_data)]
 
+                # 2次元リストに整形
+                input_data = self._ensure_2d_list(input_data)
+                self.logger.debug(f"input_data: {input_data}")
+                self.logger.debug(f"最終的なinput_dataの構造: type={type(input_data)}, sample={input_data[:2]}")
 
                 writeData = selectWorkSheet.update(cell, input_data)
                 self.logger.info(f"{input_data}を{cell}への書き込み完了")
@@ -184,6 +198,40 @@ class GssWrite:
 
 
     ####################################################################################
+    # ----------------------------------------------------------------------------------
+    #? 再帰関数
+    # リストが入っている場合には再度関数を通してisinstanceで引っかからなくなるまで実施する
+
+    def _convert_datetime_to_str(self, data):
+        if isinstance(data, datetime):
+            return data.strftime("%Y-%m-%d %H:%M:%S")  # datetimeならstrに変換
+        elif isinstance(data, list):
+            return [self._convert_datetime_to_str(item) for item in data]  # listなら再帰呼び出し
+        return data  # その他（str, intなど）はそのまま返す
+
+    # ----------------------------------------------------------------------------------
+    # 2次元データに変換する
+
+    def _ensure_2d_list(self, data):
+        if isinstance(data, list):
+            # [[[a, b]]] → [[a, b]]
+            if len(data) == 1 and isinstance(data[0], list) and len(data[0]) > 0 and isinstance(data[0][0], list):
+                self.logger.debug(f"3次元から2次元に変換: {data}")
+                return data[0]  # 1階層 flatten（3次元から2次元）
+
+            # [a, b] → [[a, b]]
+            if all(not isinstance(row, list) for row in data):
+                self.logger.debug(f"1次元から2次元に変換: {data}")
+                return [data]
+
+            # [[a, b]] → OK（そのまま返す）
+            if all(isinstance(row, list) for row in data):
+                self.logger.debug(f"2次元のまま: {data}")
+                return data
+
+        # "a" や 123 → [[a]]
+        return [[data]]
+
     # ----------------------------------------------------------------------------------
     # スプシの認証プロパティ
 
