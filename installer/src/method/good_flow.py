@@ -10,6 +10,7 @@ import time
 from datetime import datetime
 from selenium.webdriver.remote.webelement import WebElement
 from selenium.webdriver.chrome.webdriver import WebDriver
+from selenium.common.exceptions import NoSuchElementException
 
 # 自作モジュール
 from method.base.utils.logger import Logger
@@ -68,9 +69,21 @@ class GoodFlow:
 
     def process(self, target_worksheet_name: str):
         try:
-            # いいねをクリック
-            self.get_element.clickElement(by=self.const_element['by_5'], value=self.const_element['value_5'])
-            self.random_sleep._random_sleep(2, 5)
+            try:
+                # いいねをクリック
+                self.get_element.clickElement(by=self.const_element['by_5'], value=self.const_element['value_5'])
+                self.logger.info("いいねをクリックしました")
+                self.random_sleep._random_sleep(2, 5)
+
+            except NoSuchElementException:
+                self.logger.warning("いいねの要素が見つかりませんので「その他」をクリックします")
+                self.get_element.clickElement(by=self.const_element['by_5'], value=self.const_element['value_12'])
+                self.logger.info("「その他」をクリックしました")
+                self.random_sleep._random_sleep(2, 5)
+
+            except Exception as e:
+                self.logger.error(f"いいねをクリック中にエラーが発生: {e}")
+
 
             # 書込データを取得
             filtered_write_data, target_df = self._get_filtered_write_data(target_worksheet_name=target_worksheet_name)
@@ -186,12 +199,27 @@ class GoodFlow:
 
     def _generate_write_data(self):
         try:
-            # モーダルを取得
-            modal_element = self._get_modal_element()
+            try:
+                # モーダルを取得
+                modal_element = self._get_modal_element()
+                self.random_sleep._random_sleep(2, 5)
+                self.logger.info("モーダルを取得しました")
+
+            except NoSuchElementException:
+                self.logger.warning("いいねの要素が見つかりませんので「その他」をクリックします")
+                self.get_element.clickElement(by=self.const_element['by_5'], value=self.const_element['value_12'])
+                self.logger.info("「その他」をクリックしました")
+                self.random_sleep._random_sleep(2, 5)
+                modal_element = self._get_modal_element()
+                self.logger.info("モーダルを取得しました")
+                self.random_sleep._random_sleep(2, 5)
+
+            except Exception as e:
+                self.logger.error(f"いいねをクリック中にエラーが発生: {e}")
 
             unique_checker = set()
             user_infos = []
-            scroll_step = 300
+            scroll_step = 200
             max_user_count = 10000  # ← ここを目的に応じて変更
 
             # 初期位置

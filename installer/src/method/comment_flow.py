@@ -236,7 +236,7 @@ class CommentFlow:
 
                     # 週間前、時間前、日前のいずれかが含まれていて、返信が含まれている場合
                     li_text = li.text
-                    if ("週間前" in li_text or "時間前" in li_text or "日前" in li_text) and "返信" in li_text:
+                    if ("週間前" in li_text or "時間前" in li_text or "日前" in li_text or "分前" in li_text) and "返信" in li_text:
                         true_li_elements.append(li)
 
                 for l in true_li_elements:

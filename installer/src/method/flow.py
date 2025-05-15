@@ -146,9 +146,12 @@ class SingleProcess:
                     self.popup.popupCommentOnly( title=self.popup_cmt['POPUP_TITLE_SHEET_INPUT_ERR'], comment=self.popup_cmt['POPUP_TITLE_SHEET_START_DATE'])
                     raise
 
-                # 対象のワークシート存在確認
-                
+                # アカウント毎WSフォーマットリスト
+                new_ws_col= [self.const_gss_info['TARGET_INPUT_USERNAME'], self.const_gss_info['TARGET_INPUT_USER_URL'], self.const_gss_info['TARGET_INPUT_TYPE'], self.const_gss_info['TARGET_INPUT_DATE']]
+                self.logger.debug(f"new_ws_col: {new_ws_col}")
 
+                # 対象のワークシート存在確認
+                self.gss_write._check_ws(gss_info=self.const_gss_info, ws_name=target_worksheet_name, col_list=new_ws_col)
 
                 # 新しいタブを開いてURLにアクセス
                 main_window = self.chrome.current_window_handle
@@ -161,10 +164,10 @@ class SingleProcess:
                 if not pin_element:
                     self.logger.debug(f"ピン留めされた投稿はありません")
                     pin_count = 0
-
-                pin_count = len(pin_element)
-                self.logger.debug(f"ピン留めされた投稿要素: {pin_element}")
-                self.logger.debug(f"【{index + 1}つ目】ピン留めされた投稿数: {pin_count}つ")
+                else:
+                    pin_count = len(pin_element)
+                    self.logger.debug(f"ピン留めされた投稿要素: {pin_element}")
+                    self.logger.debug(f"【{index + 1}つ目】ピン留めされた投稿数: {pin_count}つ")
 
                 # 最初の投稿をクリック
                 self.get_element.clickElement(value=self.const_element['value_3'])
@@ -197,7 +200,9 @@ class SingleProcess:
                         self.comment_flow.process(target_worksheet_name=target_worksheet_name)
                         self.random_sleep._random_sleep(2, 5)
 
+
                         #* いいねFlowの実施
+                        #TODO 要素があるまで待機仕様
                         self.good_flow.process(target_worksheet_name=target_worksheet_name)
                         self.random_sleep._random_sleep(2, 5)
 

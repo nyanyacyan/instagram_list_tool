@@ -47,12 +47,10 @@ class GssInfo(Enum):
         "TARGET_INPUT_USER_URL": "URL",
         "TARGET_INPUT_TYPE": "コメント or いいね",
         "TARGET_INPUT_DATE": "追加日",
-
         "START_DAYTIME": "取得開始日時",
         "END_DAYTIME": "取得終了日時",
         "RUNNING_DATE": "実施日時",
         "WRITE_ERROR": "エラー",
-
 
         "DRIVE_PARENTS_URL": "https://drive.google.com/drive/folders/17m3IFY35w-QWcwn39cM8BEAk7qWQwVts",
     }
@@ -173,7 +171,9 @@ class Element(Enum):
         "value_9": '//div[@role="dialog"]//div[contains(@style, "overflow")]',
         "value_10": './/a[starts-with(@href, "/") and string-length(@href) > 1]',
         "value_11": './/a[starts-with(@href, "/") and string-length(@href) > 1]',
-        "": "",
+
+        # いいねのクリックがその他の場合の要素
+        "value_12": '//a[span[text()="その他"] and contains(@href, "liked_by")]',
         "": "",
         "": "",
 

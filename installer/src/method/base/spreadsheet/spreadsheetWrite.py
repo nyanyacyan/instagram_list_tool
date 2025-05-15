@@ -123,25 +123,68 @@ class GssWrite:
 
     #!###################################################################################
     # ----------------------------------------------------------------------------------
-    # Worksheetの作成
+    # Worksheet存在確認→作成
 
-    def _create_worksheet_add_col(self, gss_info: Dict, title_name: str):
+    def _create_worksheet_add_col(self, gss_info: Dict, ws_name: str, col_list: List):
         try:
             client = self.client(jsonKeyName=gss_info["JSON_KEY_NAME"])
             select_gss = client.open_by_url(gss_info["SHEET_URL"])
 
-            # Worksheetを作成する
-            new_ws = select_gss.add_worksheet(title=title_name, rows=1000, cols=20)
-            self.logger.info(f'{title_name} Worksheetを作成しました')
+            # Worksheetの存在確認
+            try:
+                select_gss.worksheet(ws_name)
+                self.logger.info(f'{ws_name} Worksheetは既に存在します')
+                return
+            except gspread.exceptions.WorksheetNotFound:
+                self.logger.info(f'{ws_name} Worksheetは存在しません')
+                self.logger.info(f'{ws_name} Worksheetを作成します')
+
+                # Worksheetを作成する
+                new_ws = select_gss.add_worksheet(title=ws_name, rows=1000, cols=20)
+                self.logger.info(f'{ws_name} Worksheetを作成しました')
 
             # columnを追加する
-            new_ws.append_row(gss_info["ADD_COL"])
-            self.logger.info(f'{title_name} {gss_info["ADD_COL"]} columnを追加')
+            new_ws.update("A1", col_list)
+            self.logger.info(f'{ws_name} {gss_info["ADD_COL"]} columnを追加')
 
         except Exception as e:
             self.logger.warning(f'{self.__class__.__name__} Worksheetを作成している際にエラーが発生: {e}')
 
     ####################################################################################
+    # Worksheet存在確認→作成
+
+    def _check_ws(self, gss_info: Dict, ws_name: str, col_list: List):
+        try:
+            client = self.client(jsonKeyName=gss_info["JSON_KEY_NAME"])
+            select_gss = client.open_by_url(gss_info["SHEET_URL"])
+
+            # Worksheetの存在確認
+            try:
+                select_gss.worksheet(ws_name)
+                self.logger.info(f'{ws_name} Worksheetは既に存在します')
+                return
+
+            except gspread.exceptions.WorksheetNotFound:
+                self.logger.info(f'{ws_name} Worksheetは存在しません')
+                self.logger.info(f'{ws_name} Worksheetを作成します')
+
+                # Worksheetを作成する
+                new_ws = select_gss.add_worksheet(title=ws_name, rows=1000, cols=20)
+                self.logger.info(f'{ws_name} Worksheetを作成しました')
+
+                # columnを追加する
+                if col_list:
+                    clean_col_list = self._ensure_2d_list(col_list)
+                    new_ws.update("A1", clean_col_list)
+                    self.logger.info(f'{ws_name} {clean_col_list} columnを追加')
+                else:
+                    self.logger.info(f'{ws_name} columnは追加なし')
+
+        except Exception as e:
+            self.logger.warning(f'{self.__class__.__name__} Worksheetを作成している際にエラーが発生: {e}')
+
+    ####################################################################################
+
     # 行を指定して左から順番に値を入れる
 
     def write_gss_base(self, gss_info: Dict, row_num: int, col_num: int, input_value: Any):
@@ -221,8 +264,9 @@ class GssWrite:
 
             # [a, b] → [[a, b]]
             if all(not isinstance(row, list) for row in data):
+                data = [data]  # 1次元を2次元に変換
                 self.logger.debug(f"1次元から2次元に変換: {data}")
-                return [data]
+                return data
 
             # [[a, b]] → OK（そのまま返す）
             if all(isinstance(row, list) for row in data):
