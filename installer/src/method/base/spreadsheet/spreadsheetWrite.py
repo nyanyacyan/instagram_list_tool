@@ -113,9 +113,17 @@ class GssWrite:
                 return writeData
 
             except Exception as e:
-                self.logger.warning(f'{self.__class__.__name__} エラー発生、リトライ実施: {retry_count + 1}/{max_count} → {e}')
-                time.sleep(1)  # 少し待って再取得
-                retry_count += 1
+                if retry_count <= 2:
+                    self.logger.warning(f'{self.__class__.__name__} エラー発生、リトライ実施: {retry_count + 1}/{max_count} → {e}')
+                    time.sleep(5)  # 少し待って再取得
+                    retry_count += 1
+                    continue
+
+                elif retry_count == 3:
+                    self.logger.error(f'{self.__class__.__name__} APIエラーの可能性あり 90秒後に再度実施: {retry_count + 1}/{max_count} → {e}')
+                    time.sleep(90)  # 少し待って再取得
+                    retry_count += 1
+                    continue
 
         # `max_count` に達した場合、エラーを記録
         self.logger.error(f'{self.__class__.__name__} 最大リトライ回数 {max_count} 回を超過。処理を中断')
