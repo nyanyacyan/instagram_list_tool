@@ -115,9 +115,11 @@ class SingleProcess:
             # 対象のページが開いているかどうかを確認
             self.wait.canWaitClick(value=self.const_element['value_1'])
 
+            account_process_count = 1
             # ターゲットユーザーのURLリストを下に下記のフローを回す
             for index, row in target_df.iterrows():
-                row_num = index + 2
+                self.logger.debug(f"{account_process_count} / {len(target_df)} ユーザーアカウント処理開始")
+                row_num = index + 1
                 row_dict = row.to_dict()
                 self.logger.debug(f"row_dict: {row_dict}")
 
@@ -128,13 +130,15 @@ class SingleProcess:
                 target_worksheet_url = row_dict[self.const_gss_info["TARGET_WORKSHEET_URL"]]
                 target_worksheet_name = row_dict[self.const_gss_info["TARGET_COLUMN_WORKSHEET_NAME"]]
 
+
                 # アナウンス
                 self.logger.info(f"【{index + 1}つ目】の実行  URL: {target_user_url}")
 
                 # それぞれ書き出すセルアドレスを取得
                 gss_date_cell = self.select_cell.get_cell_address(gss_row_dict=row_dict, col_name=self.const_gss_info["RUNNING_DATE"], row_num=row_num)
                 gss_err_cell = self.select_cell.get_cell_address(gss_row_dict=row_dict, col_name=self.const_gss_info["WRITE_ERROR"], row_num=row_num)
-
+                self.logger.debug(f"\ntarget_user_url: {target_user_url}\nstart_daytime: {start_daytime}\nrunning_date: {running_date}\nwrite_error: {write_error}\ntarget_worksheet_url: {target_worksheet_url}\ntarget_worksheet_name: {target_worksheet_name}\n")
+                self.logger.debug(f"実施日: {gss_date_cell}\nエラー記入箇所: {gss_err_cell}")
 
                 if start_daytime == "":
                     self.logger.debug(f"スプシの{index + 1}番目の「取得開始日時」が入力されてません: {start_daytime}")
@@ -142,9 +146,12 @@ class SingleProcess:
                     self.popup.popupCommentOnly( title=self.popup_cmt['POPUP_TITLE_SHEET_INPUT_ERR'], comment=self.popup_cmt['POPUP_TITLE_SHEET_START_DATE'])
                     raise
 
-                self.logger.debug(f"\ntarget_user_url: {target_user_url}\nstart_daytime: {start_daytime}\nrunning_date: {running_date}\nwrite_error: {write_error}\ntarget_worksheet_url: {target_worksheet_url}\ntarget_worksheet_name: {target_worksheet_name}\n")
+                # 対象のワークシート存在確認
+                
+
 
                 # 新しいタブを開いてURLにアクセス
+                main_window = self.chrome.current_window_handle
                 self.get_element._open_new_page(url=target_user_url)
                 self.random_sleep._random_sleep(2, 5)
                 #TODO ここに要素が出てから出ないとダメかも
@@ -234,13 +241,16 @@ class SingleProcess:
                             break
 
                 # 投稿完了→スプシに日付の書込
+                self.logger.debug(f"投稿完了→スプシに日付の書込")
+                self.logger.debug(f"cell: {gss_date_cell}")
                 self.gss_write.write_data_by_url(gss_info=self.const_gss_info, cell=gss_date_cell, input_data=self.timestamp)
 
                 # 対象のタブを閉じる
                 self.chrome.close()
+                self.chrome.switch_to.window(main_window)
                 self.logger.debug(f"タブを閉じました: {target_user_url}")
-                self.logger.warning(f"【{index + 1}つ目】処理完了  URL: {target_user_url}")
-
+                self.logger.warning(f"【{account_process_count + 1}つ目】処理完了  URL: {target_user_url}")
+                account_process_count += 1
 
         except TimeoutError:
             timeout_comment = "タイムエラー：ログインに失敗している可能性があります。"
