@@ -2,6 +2,7 @@
 # $$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
 
 # $$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
+import pandas as pd
 from typing import Dict
 
 
@@ -26,7 +27,6 @@ class GssSelectCell:
         # インスタンス
         self.networkError = NetworkHandler()
         self.path = BaseToPath()
-
 
     ####################################################################################
     # ✅ 行のcolumnからセルの列のアルファベットを出力
@@ -86,5 +86,26 @@ class GssSelectCell:
         row_index = len(input_str_list) + 1
         self.logger.debug(f"最初にNoneになっている行数: {row_index}")
         return row_index
+
+    # ----------------------------------------------------------------------------------
+    # 貼り付ける範囲を取得
+
+    def _generate_write_range(self, existing_data_df:pd.DataFrame, start_cell_str: str, start_cell_int: int, end_cell_str: str):
+        # もしdfがNoneまたは空の場合
+        if existing_data_df is None or existing_data_df.empty:
+            self.logger.warning("対象のdfが空です。")
+            row_none_num = 2
+        else:
+            # 既存データからの行数から最初のNoneの行数を取得
+            row_none_num = len(existing_data_df.columns) + 2
+            self.logger.debug(f"最初にNoneになっている行数: {row_none_num}")
+
+        start_cell = f"{start_cell_str}{start_cell_int}"
+
+        end_cell_int = row_none_num + start_cell_int
+        end_cell = f"{end_cell_str}{end_cell_int}"
+        cell_range = f"{start_cell}:{end_cell}"
+        self.logger.debug(f"書き込み範囲: {cell_range}")
+        return cell_range
 
     # ----------------------------------------------------------------------------------
