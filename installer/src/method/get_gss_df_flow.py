@@ -6,6 +6,7 @@
 # $$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
 # import
 from datetime import datetime
+from selenium.webdriver.chrome.webdriver import WebDriver
 
 # 自作モジュール
 from method.base.utils.logger import Logger
@@ -29,10 +30,13 @@ deco = Decorators()
 
 
 class GetGssDfFlow:
-    def __init__(self):
+    def __init__(self, chrome: WebDriver):
         # logger
         self.getLogger = Logger()
         self.logger = self.getLogger.getLogger()
+
+        # chrome
+        self.chrome = chrome
 
         # インスタンス
         self.time_manager = TimeManager()
