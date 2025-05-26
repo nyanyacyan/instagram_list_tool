@@ -52,8 +52,8 @@ class CommentFlow:
         self.const_comment = CommentFlowElement.INSTA.value
 
         # インスタンス
-        self.random_sleep = SeleniumBasicOperations(chrome=chrome)
-        self.get_element = GetElement(chrome=chrome)
+        self.random_sleep = SeleniumBasicOperations(chrome=self.chrome)
+        self.get_element = GetElement(chrome=self.chrome)
         self.gss_write = GssWrite()
         self.gss_check_err_write = GssCheckerErrWrite()
         self.get_gss_df_flow = GetGssDfFlow()

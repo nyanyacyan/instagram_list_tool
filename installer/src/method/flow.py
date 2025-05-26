@@ -74,7 +74,7 @@ class SingleProcess:
         self.popup_cmt = PopUpComment.INSTA.value
 
         # Flow
-        self.get_gss_df_flow = GetGssDfFlow()
+        self.get_gss_df_flow = GetGssDfFlow(chrome=self.chrome)
         # self.get_user_data = GetUserToInsta(chrome=self.chrome)
         self.comment_flow = CommentFlow(chrome=self.chrome)
         self.good_flow = GoodFlow(chrome=self.chrome)
