@@ -2,11 +2,8 @@
 
 # $$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
 # import
-import os, shutil
+import os, pathlib
 from datetime import datetime
-from pathlib import Path
-from typing import List
-
 
 # 自作モジュール
 from method.base.utils.logger import Logger
@@ -36,7 +33,7 @@ class DownloadFileDelete:
 
     def delete_in_download_folder(self, file_name_head: str, extension: str):
         try:
-            downloads_path = Path(self._downloads_path())
+            downloads_path = pathlib.Path(self._downloads_path())
 
             search_file_name_word = f"{file_name_head}*{extension}"
             self.logger.debug(f'search_file_name_word: {search_file_name_word}')

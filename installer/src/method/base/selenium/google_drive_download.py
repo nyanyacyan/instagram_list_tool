@@ -4,11 +4,9 @@
 # $$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
 # import
 from typing import Dict
-from pathlib import Path
 from googleapiclient.discovery import build
 from googleapiclient.http import MediaIoBaseDownload
 from google.oauth2.service_account import Credentials
-import os
 from io import BytesIO
 
 # 自作モジュール
@@ -19,7 +17,6 @@ from method.base.spreadsheet.spreadsheetWrite import GssWrite
 
 # const
 from method.const_str import DriveMime
-from method.const_element import ErrCommentInfo
 
 
 # $$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$

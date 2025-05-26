@@ -2,10 +2,8 @@
 
 # $$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
 # import
-import os, shutil, zipfile
-from datetime import datetime, date
-from pathlib import Path
-
+import os, zipfile, pathlib
+from datetime import datetime
 
 # 自作モジュール
 from method.base.utils.logger import Logger
@@ -13,7 +11,6 @@ from method.base.utils.path import BaseToPath
 from method.base.decorators.decorators import Decorators
 
 decoInstance = Decorators()
-
 
 # $$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
 # **********************************************************************************
@@ -55,7 +52,7 @@ class ZipOperation:
     # ----------------------------------------------------------------------------------
     # フォルダ名が被らないようにする
 
-    def _get_unique_folder_path(self, base_path: Path):
+    def _get_unique_folder_path(self, base_path: pathlib.Path):
         if not os.path.exists(base_path):
             return base_path
 

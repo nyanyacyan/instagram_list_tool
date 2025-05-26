@@ -3,7 +3,7 @@
 
 # $$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
 # import
-import time, re, os, json
+import time, re, os, json, pathlib
 from selenium.webdriver.chrome.webdriver import WebDriver
 from selenium.webdriver.remote.webelement import WebElement
 from selenium.webdriver.support.ui import Select
@@ -11,7 +11,6 @@ from datetime import datetime
 from typing import Dict, Any, List, Tuple
 from selenium.webdriver.common.by import By
 from selenium.common.exceptions import ElementClickInterceptedException, ElementNotInteractableException, NoSuchElementException, TimeoutException, WebDriverException
-from pathlib import Path
 from selenium.webdriver.common.keys import Keys
 from selenium.webdriver.common.action_chains import ActionChains
 
@@ -298,7 +297,7 @@ class GetElement:
     # input_photo内にあるすべてのファイルのフルパスをリスト化する
 
     def _get_photos_all_path_list(self, photo_dir: str):
-        dir_path = Path(photo_dir)
+        dir_path = pathlib.Path(photo_dir)
         all_photos_all_path_list = [str(file) for file in dir_path.rglob('*') if file.is_file()]
         self.logger.debug(f'all_photos_all_path_list: {all_photos_all_path_list}')
         return all_photos_all_path_list

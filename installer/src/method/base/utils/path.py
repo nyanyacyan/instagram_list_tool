@@ -6,7 +6,7 @@
 
 # import
 import os, platform
-from pathlib import Path
+import pathlib
 from datetime import datetime
 
 # 自作モジュール
@@ -78,7 +78,7 @@ class BaseToPath:
 
     @property
     def currentDir(self):
-        currentDirPath = Path(__file__).resolve()
+        currentDirPath = pathlib.Path(__file__).resolve()
         return currentDirPath
 
     # ----------------------------------------------------------------------------------
@@ -117,7 +117,7 @@ class BaseToPath:
     # ----------------------------------------------------------------------------------
     # ディレクトリがない可能性の箇所に貼る関数
 
-    def isDirExists(self, path: Path):
+    def isDirExists(self, path: pathlib.Path):
         if not path.exists():
             # 親のディレクトリも作成、指定していたディレクトリが存在してもエラーを出さない
             path.mkdir(parents=True, exist_ok=True)
@@ -129,7 +129,7 @@ class BaseToPath:
     # ----------------------------------------------------------------------------------
     # ディレクトリがない可能性の箇所に貼る関数
 
-    def isFileExists(self, path: Path):
+    def isFileExists(self, path: pathlib.Path):
         if not path.exists():
             path.touch()
             self.logger.info(f"{path.name} がないため作成")
