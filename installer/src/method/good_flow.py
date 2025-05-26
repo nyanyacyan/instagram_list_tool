@@ -61,7 +61,7 @@ class GoodFlow:
         self.gss_read = GetDataGSSAPI()
         self.gss_write = GssWrite()
         self.gss_check_err_write = GssCheckerErrWrite()
-        self.get_gss_df_flow = GetGssDfFlow()
+        self.get_gss_df_flow = GetGssDfFlow(chrome=self.chrome)
 
     ####################################################################################
     #! ----------------------------------------------------------------------------------

@@ -56,7 +56,7 @@ class CommentFlow:
         self.get_element = GetElement(chrome=self.chrome)
         self.gss_write = GssWrite()
         self.gss_check_err_write = GssCheckerErrWrite()
-        self.get_gss_df_flow = GetGssDfFlow()
+        self.get_gss_df_flow = GetGssDfFlow(chrome=self.chrome)
 
     ####################################################################################
     #! ----------------------------------------------------------------------------------
