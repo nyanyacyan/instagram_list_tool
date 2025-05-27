@@ -20,7 +20,7 @@ load_dotenv()
 class GssInfo(Enum):
 
     INSTA = {
-        "JSON_KEY_NAME": "sns-auto-430920-08274ad68b41.json",
+        "JSON_KEY_NAME": "western-well-396401-82d68890d8e2.json",
         "SHEET_URL": "https://docs.google.com/spreadsheets/d/1g7ycnDup8DYweQA7J1y7yT-ADrsvWSjw8ILQVdYcBEo/edit?gid=931453217#gid=931453217",
         "TARGET_WORKSHEET_NAME": "ターゲットリスト",
         "ACCOUNT_WORKSHEET_NAME": "アカウント",
