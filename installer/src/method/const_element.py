@@ -173,7 +173,7 @@ class Element(Enum):
         "value_11": './/a[starts-with(@href, "/") and string-length(@href) > 1]',
 
         # いいねのクリックがその他の場合の要素
-        "value_12": '//a[span[text()="その他"] and contains(@href, "liked_by")]',
+        "value_16": '//a[span[text()="その他"] and contains(@href, "liked_by")]',
         "": "",
         "": "",
 

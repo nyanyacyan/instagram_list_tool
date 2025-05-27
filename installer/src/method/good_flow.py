@@ -77,7 +77,7 @@ class GoodFlow:
 
             except NoSuchElementException:
                 self.logger.warning("いいねの要素が見つかりませんので「その他」をクリックします")
-                self.get_element.clickElement(by=self.const_element['by_5'], value=self.const_element['value_12'])
+                self.get_element.clickElement(by=self.const_element['by_5'], value=self.const_element['value_16'])
                 self.logger.info("「その他」をクリックしました")
                 self.random_sleep._random_sleep(2, 5)
 
